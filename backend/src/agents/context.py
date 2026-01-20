@@ -54,6 +54,7 @@ class AgentContextBuilder:
             Exception: If database operations fail
         """
         db: Session = SessionLocal()
+        result_conversation_id = conversation_id
         try:
             # Load or create conversation
             if conversation_id:
@@ -81,17 +82,17 @@ class AgentContextBuilder:
                     conversation_id=conversation.id,
                 )
 
-            conversation_id = conversation.id
+            result_conversation_id = conversation.id
 
-            # Load all messages for conversation
+            # Load all messages for conversation (with user_id filter for security)
             messages: List[Message] = MessageRepository.list_by_conversation(
-                db, conversation_id
+                db, conversation.id, user_id=user_id
             )
 
             logger.info(
                 "messages_loaded_from_database",
                 user_id=user_id,
-                conversation_id=conversation_id,
+                conversation_id=conversation.id,
                 message_count=len(messages),
             )
 
@@ -103,14 +104,14 @@ class AgentContextBuilder:
             logger.info(
                 "conversation_context_built",
                 user_id=user_id,
-                conversation_id=conversation_id,
+                conversation_id=conversation.id,
                 total_messages=len(messages),
                 context_messages=len(conversation_history),
             )
 
             return {
                 "status": "success",
-                "conversation_id": conversation_id,
+                "conversation_id": conversation.id,
                 "user_id": user_id,
                 "conversation_history": conversation_history,
                 "message_count": len(messages),
@@ -120,13 +121,13 @@ class AgentContextBuilder:
             logger.error(
                 "context_builder_failed",
                 user_id=user_id,
-                conversation_id=conversation_id,
+                conversation_id=result_conversation_id,
                 error=str(e),
             )
             return {
                 "status": "error",
                 "message": "Failed to build context",
-                "conversation_id": conversation_id,
+                "conversation_id": result_conversation_id,
                 "user_id": user_id,
                 "conversation_history": [],
                 "message_count": 0,

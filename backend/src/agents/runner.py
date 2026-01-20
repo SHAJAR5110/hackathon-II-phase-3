@@ -233,15 +233,23 @@ class AgentRunner:
         """
         try:
             # In production, would iterate through events from runner
-            # For now, placeholder implementation
+            # For now, this is a simplified implementation
             # This would be integrated with OpenAI Agents SDK event streaming
+
+            # Log agent execution with message context
+            logger.info(
+                "agent_with_tools_executing",
+                user_id=user_id,
+                conversation_id=conversation_id,
+                total_messages=len(messages),
+            )
 
             # Mock response (in production, extract from agent events)
             response_text = (
                 "I'm ready to help you manage your tasks. What would you like to do?"
             )
 
-            # Example of how tool calls would be captured:
+            # Example of how tool calls would be captured when using OpenAI Agents SDK:
             # for event in events:
             #     if event.type == "tool_call":
             #         tool_name = event.tool_name
@@ -253,12 +261,20 @@ class AgentRunner:
             #             "result": result,
             #         })
 
+            logger.info(
+                "agent_with_tools_completed",
+                user_id=user_id,
+                conversation_id=conversation_id,
+                tool_calls_made=len(tool_calls_list),
+            )
+
             return response_text
 
         except Exception as e:
             logger.error(
                 "tool_execution_failed",
                 user_id=user_id,
+                conversation_id=conversation_id,
                 error=str(e),
             )
             raise

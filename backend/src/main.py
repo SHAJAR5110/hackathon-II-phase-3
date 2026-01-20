@@ -56,10 +56,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register middleware in order (innermost first):
-# 1. Error handling (catches all exceptions)
-# 2. Authentication (validates user_id from header)
-# 3. Request/response logging (with request_id traceability)
+# Register middleware in order (LIFO - registered last executes first):
+# Note: FastAPI middleware stack is LIFO, so innermost (first to execute) is registered last
+# Execution order: logging_middleware → auth_middleware → error_handling_middleware
+# 1. logging_middleware: Generate request_id and log incoming requests
+# 2. auth_middleware: Extract and validate user_id from Authorization header
+# 3. error_handling_middleware: Catch all exceptions and format responses
 app.middleware("http")(error_handling_middleware)
 app.middleware("http")(auth_middleware)
 app.middleware("http")(logging_middleware)

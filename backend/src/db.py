@@ -6,7 +6,7 @@ Includes connection pooling with overflow protection (max_overflow=0)
 import os
 from typing import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
@@ -72,7 +72,7 @@ def test_database_connection() -> bool:
     """
     try:
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         logger.info("Database connection successful")
         return True
     except Exception as e:

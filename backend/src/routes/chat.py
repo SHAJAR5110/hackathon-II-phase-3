@@ -5,8 +5,6 @@ Feature: 1-chatbot-ai
 """
 
 import asyncio
-import logging
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status

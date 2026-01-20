@@ -202,17 +202,20 @@ class MessageRepository:
 
     @staticmethod
     def list_by_conversation(
-        db: Session, conversation_id: int, limit: int = 100, offset: int = 0
+        db: Session,
+        conversation_id: int,
+        limit: int = 100,
+        offset: int = 0,
+        user_id: str = None,
     ) -> List[Message]:
-        """List messages in a conversation"""
-        return (
-            db.query(Message)
-            .filter(Message.conversation_id == conversation_id)
-            .order_by(Message.created_at)
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
+        """List messages in a conversation (optionally filtered by user_id for security)"""
+        query = db.query(Message).filter(Message.conversation_id == conversation_id)
+
+        # If user_id is provided, add user_id filter for extra security
+        if user_id:
+            query = query.filter(Message.user_id == user_id)
+
+        return query.order_by(Message.created_at).offset(offset).limit(limit).all()
 
     @staticmethod
     def count_by_conversation(db: Session, conversation_id: int) -> int:
