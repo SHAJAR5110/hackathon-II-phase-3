@@ -140,25 +140,25 @@ Implement user authentication validation, authorization, and request/response mi
 
 ### Tasks
 
-- [ ] T011 Create authentication middleware in `backend/src/middleware/auth.py`:
+- [x] T011 Create authentication middleware in `backend/src/middleware/auth.py`:
   - Extract user_id from Authorization header (Better Auth session token)
   - Validate user_id exists, non-empty, matches pattern
   - Attach user to request state as request.state.user_id
   - Return {"detail": "Unauthorized"} with 401 for missing/invalid
 
-- [ ] T012 [P] Create authorization dependency in `backend/src/middleware/auth.py`:
+- [x] T012 [P] Create authorization dependency in `backend/src/middleware/auth.py`:
   - Create get_current_user() dependency for FastAPI
   - Return user_id from request.state
   - Use in all protected endpoints: `@app.get("/") def route(user_id: str = Depends(get_current_user))`
 
-- [ ] T013 [P] Create error handling middleware in `backend/src/middleware/errors.py`:
+- [x] T013 [P] Create error handling middleware in `backend/src/middleware/errors.py`:
   - Catch all exceptions globally
   - Log with context: user_id, endpoint, method, exception type
   - Return structured error: {"error": "Internal error", "request_id": "..."}
   - Map database errors (IntegrityError, OperationalError) to user-friendly messages
   - Return 500 with no stack trace
 
-- [ ] T014 [P] Create request/response logging middleware in `backend/src/middleware/logging_middleware.py`:
+- [x] T014 [P] Create request/response logging middleware in `backend/src/middleware/logging_middleware.py`:
   - Generate request_id for traceability
   - Log request: method, path, user_id, timestamp
   - Log response: status_code, latency_ms

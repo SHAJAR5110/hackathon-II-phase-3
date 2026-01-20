@@ -5,12 +5,16 @@ Feature: 1-chatbot-ai
 
 import os
 from contextlib import asynccontextmanager
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .logging_config import setup_logging, get_logger
+from .logging_config import get_logger, setup_logging
+from .middleware.auth import auth_middleware
+from .middleware.errors import error_handling_middleware
+from .middleware.logging_middleware import logging_middleware
 
 # Load environment variables
 load_dotenv()
@@ -23,7 +27,9 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events"""
-    logger.info("Application starting up", environment=os.getenv("ENVIRONMENT", "development"))
+    logger.info(
+        "Application starting up", environment=os.getenv("ENVIRONMENT", "development")
+    )
     yield
     logger.info("Application shutting down")
 
@@ -39,11 +45,23 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:8000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register middleware in order (innermost first):
+# 1. Error handling (catches all exceptions)
+# 2. Authentication (validates user_id from header)
+# 3. Request/response logging (with request_id traceability)
+app.middleware("http")(error_handling_middleware)
+app.middleware("http")(auth_middleware)
+app.middleware("http")(logging_middleware)
 
 
 # Health check endpoint
@@ -72,21 +90,8 @@ async def root():
     }
 
 
-# Error handlers
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    """Global exception handler"""
-    logger.error(
-        "Unhandled exception",
-        path=request.url.path,
-        method=request.method,
-        exception=str(exc),
-        exc_type=type(exc).__name__,
-    )
-    return JSONResponse(
-        status_code=500,
-        content={"error": "Internal server error", "request_id": getattr(request.state, "request_id", "unknown")},
-    )
+# Note: Global exception handling is done via middleware (error_handling_middleware)
+# to ensure proper context (user_id, request_id) is available in logs
 
 
 # Startup message
