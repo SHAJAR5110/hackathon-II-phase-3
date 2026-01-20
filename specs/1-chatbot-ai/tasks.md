@@ -182,54 +182,54 @@ Implement stateless MCP server with all five task operation tools (add_task, lis
 
 ### Tasks
 
-- [ ] T015 Create MCP server foundation in `backend/src/mcp_server/__init__.py`:
-  - Import official MCP SDK: `from mcp import Server`
+- [x] T015 Create MCP server foundation in `backend/src/mcp_server/__init__.py`:
+  - Import official MCP SDK: `from mcp.server import Server`
   - Initialize Server with name "todo-mcp-server", version "1.0.0"
   - Define tool registry dictionary
   - Create start_server() function
 
-- [ ] T016 [P] Implement `add_task` MCP tool in `backend/src/mcp_server/tools/add_task.py`:
+- [x] T016 [P] Implement `add_task` MCP tool in `backend/src/mcp_server/tools/add_task.py`:
   - Parameters: user_id (string, required), title (string, required, max 1000), description (string, optional, max 1000)
   - Returns: {"task_id": int, "status": "created", "title": str}
   - Call TaskRepository.create(user_id, title, description)
   - Example: {"user_id": "user123", "title": "Buy groceries", "description": "milk, eggs"} → {"task_id": 5, "status": "created", "title": "Buy groceries"}
   - Validation: title cannot be empty, length checks
 
-- [ ] T017 [P] Implement `list_tasks` MCP tool in `backend/src/mcp_server/tools/list_tasks.py`:
+- [x] T017 [P] Implement `list_tasks` MCP tool in `backend/src/mcp_server/tools/list_tasks.py`:
   - Parameters: user_id (string, required), status (string, optional: "all" | "pending" | "completed", default "all")
   - Returns: Array of {"id": int, "title": str, "description": str, "completed": bool, "created_at": str}
   - Call TaskRepository.list_by_user(user_id, status)
   - Filter by completion status in SQL (not in Python)
   - Sort by created_at DESC
 
-- [ ] T018 [P] Implement `complete_task` MCP tool in `backend/src/mcp_server/tools/complete_task.py`:
+- [x] T018 [P] Implement `complete_task` MCP tool in `backend/src/mcp_server/tools/complete_task.py`:
   - Parameters: user_id (string, required), task_id (integer, required)
   - Returns: {"task_id": int, "status": "completed", "title": str}
   - Call TaskRepository.read(user_id, task_id) → verify ownership
   - Call TaskRepository.update(task_id, completed=True)
   - Error if task not found: {"error": "task_not_found", "message": "Task {id} not found"}
 
-- [ ] T019 [P] Implement `delete_task` MCP tool in `backend/src/mcp_server/tools/delete_task.py`:
+- [x] T019 [P] Implement `delete_task` MCP tool in `backend/src/mcp_server/tools/delete_task.py`:
   - Parameters: user_id (string, required), task_id (integer, required)
   - Returns: {"task_id": int, "status": "deleted", "title": str}
   - Call TaskRepository.read(user_id, task_id) → verify ownership
   - Call TaskRepository.delete(task_id)
   - Return deleted task info before deletion
 
-- [ ] T020 [P] Implement `update_task` MCP tool in `backend/src/mcp_server/tools/update_task.py`:
+- [x] T020 [P] Implement `update_task` MCP tool in `backend/src/mcp_server/tools/update_task.py`:
   - Parameters: user_id (string, required), task_id (integer, required), title (string, optional), description (string, optional)
   - Returns: {"task_id": int, "status": "updated", "title": str}
   - Require at least one of title/description to be provided
   - Call TaskRepository.read(user_id, task_id) → verify ownership
   - Call TaskRepository.update(task_id, title=title, description=description)
 
-- [ ] T021 Create MCP tool registry in `backend/src/mcp_server/registry.py`:
+- [x] T021 Create MCP tool registry in `backend/src/mcp_server/registry.py`:
   - Register all 5 tools with MCP server
   - Define tool schemas with JSON Schema
   - Map tool names to callable functions
   - Include tool descriptions for agent context
 
-- [ ] T022 Create unit tests for MCP tools in `backend/tests/test_mcp_tools.py`:
+- [x] T022 Create unit tests for MCP tools in `backend/tests/test_mcp_tools.py`:
   - Mock database repositories
   - Test each tool with valid inputs → verify correct output
   - Test each tool with invalid inputs → verify error response
