@@ -9,9 +9,53 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 
 from ..logging_config import get_logger
-from ..models import Conversation, Message, Task
+from ..models import Conversation, Message, Task, User
 
 logger = get_logger(__name__)
+
+
+class UserRepository:
+    """Repository for User operations"""
+
+    @staticmethod
+    def get_or_create(db: Session, user_id: str) -> User:
+        """Get existing user or create new one if not found
+        
+        This ensures User records exist before creating related records
+        (Task, Conversation, Message) that have foreign key constraints.
+        
+        Parameters:
+            db (Session): Database session
+            user_id (str): User ID to get or create
+            
+        Returns:
+            User: The User object (existing or newly created)
+        """
+        try:
+            # Try to get existing user
+            user = db.query(User).filter(User.user_id == user_id).first()
+            
+            if user:
+                logger.debug("existing_user_found", user_id=user_id)
+                return user
+            
+            # Create new user if not found
+            user = User(user_id=user_id)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            logger.info("user_created", user_id=user_id)
+            return user
+            
+        except Exception as e:
+            db.rollback()
+            logger.error("user_get_or_create_failed", user_id=user_id, error=str(e))
+            raise
+
+    @staticmethod
+    def read(db: Session, user_id: str) -> Optional[User]:
+        """Read a user by ID"""
+        return db.query(User).filter(User.user_id == user_id).first()
 
 
 class TaskRepository:
@@ -23,6 +67,9 @@ class TaskRepository:
     ) -> Task:
         """Create a new task"""
         try:
+            # Ensure user exists before creating task
+            UserRepository.get_or_create(db, user_id)
+            
             task = Task(user_id=user_id, title=title, description=description)
             db.add(task)
             db.commit()
@@ -123,6 +170,9 @@ class ConversationRepository:
     def create(db: Session, user_id: str) -> Conversation:
         """Create a new conversation"""
         try:
+            # Ensure user exists before creating conversation
+            UserRepository.get_or_create(db, user_id)
+            
             conversation = Conversation(user_id=user_id)
             db.add(conversation)
             db.commit()
@@ -225,4 +275,4 @@ class MessageRepository:
         )
 
 
-__all__ = ["TaskRepository", "ConversationRepository", "MessageRepository"]
+__all__ = ["UserRepository", "TaskRepository", "ConversationRepository", "MessageRepository"]

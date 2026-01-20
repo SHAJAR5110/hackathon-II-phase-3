@@ -35,6 +35,24 @@ class AgentContextBuilder:
         3. Converting to ThreadItem format for agent
         4. Including user_id for tool access
 
+        IMPORTANT - ASYNC/SYNC PATTERN:
+        This method is synchronous (not async) but is called from async routes
+        (e.g., POST /api/{user_id}/chat). This is intentional and acceptable because:
+        
+        1. SQLAlchemy ORM operations are synchronous (not async-native)
+        2. Database operations are fast for reasonable message counts
+        3. Used within FastAPI async context manager but doesn't await
+        4. FastAPI middleware stack allows sync functions in async context
+        
+        Future optimization (Phase 7):
+        - Switch to async SQLAlchemy (SQLModel with asyncpg driver)
+        - Use: async with AsyncSession() as db
+        - Make this method async with await db.execute()
+        - Run: response = await self.build_context(...)
+        
+        Current approach is acceptable for Phase 6 with typical message counts (< 100).
+        Performance will be monitored; optimize if latency exceeds SLA.
+
         Parameters:
             user_id (str): The authenticated user ID
             conversation_id (Optional[int]): Existing conversation ID (creates new if not provided)

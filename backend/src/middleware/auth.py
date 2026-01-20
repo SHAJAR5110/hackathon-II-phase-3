@@ -56,7 +56,7 @@ async def auth_middleware(request: Request, call_next):
             method=request.method,
             request_id=request.state.request_id,
         )
-        return create_unauthorized_response()
+        raise create_unauthorized_response()
 
     # Parse Bearer token
     parts = auth_header.split()
@@ -68,7 +68,7 @@ async def auth_middleware(request: Request, call_next):
             auth_header_format=auth_header[:20] if auth_header else None,
             request_id=request.state.request_id,
         )
-        return create_unauthorized_response()
+        raise create_unauthorized_response()
 
     token = parts[1]
 
@@ -87,7 +87,7 @@ async def auth_middleware(request: Request, call_next):
             method=request.method,
             request_id=request.state.request_id,
         )
-        return create_unauthorized_response()
+        raise create_unauthorized_response()
 
     # Attach user_id to request state
     request.state.user_id = user_id
@@ -105,8 +105,12 @@ async def auth_middleware(request: Request, call_next):
 
 
 def create_unauthorized_response():
-    """Create 401 Unauthorized JSON response"""
-    return HTTPException(
+    """Create 401 Unauthorized JSON response
+    
+    Raises HTTPException instead of returning it, so that FastAPI's exception
+    handler can properly format the response with correct headers.
+    """
+    raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Unauthorized",
         headers={"WWW-Authenticate": "Bearer"},

@@ -27,7 +27,18 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan: startup and shutdown events"""
+    """Application lifespan: startup and shutdown events
+    
+    NOTE: MCP Server Integration (Phase 7)
+    The MCP server for tool management is currently initialized in registry.py
+    but not actively used in the agent pipeline yet. Full OpenAI Agents SDK
+    integration with MCP tools will be implemented in Phase 7 (Frontend Integration).
+    
+    When ready to implement:
+    1. Import MCP server: from .mcp_server import start_server
+    2. Start in lifespan: server = start_server()
+    3. Register tools and ensure proper lifecycle management
+    """
     logger.info(
         "Application starting up", environment=os.getenv("ENVIRONMENT", "development")
     )

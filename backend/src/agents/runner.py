@@ -222,6 +222,24 @@ class AgentRunner:
         """
         Run agent and handle tool invocations
 
+        PLACEHOLDER IMPLEMENTATION FOR PHASE 7:
+        This method is currently a placeholder that returns a static response.
+        Full OpenAI Agents SDK integration with tool invocation will be implemented
+        in Phase 7 (Frontend Integration) when the ChatKit frontend is ready to call
+        this endpoint with proper session context.
+
+        Current implementation:
+        - Returns a static greeting response
+        - Captures message context for future tool invocation
+        - Maintains structure ready for tool loop implementation
+
+        Future implementation (Phase 7) will:
+        - Stream events from OpenAI Agents SDK runner
+        - Extract tool_call events and invoke MCP tools
+        - Chain multiple tool calls in single turn
+        - Collect tool results back to agent for synthesis
+        - Extract final text response from events
+
         Parameters:
             user_id (str): Authenticated user
             conversation_id (int): Conversation ID
