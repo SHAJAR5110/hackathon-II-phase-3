@@ -1,0 +1,12 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+openai-chatkit<=1.4.0
+openai-agents[litellm]>=0.6.2
+sqlmodel==0.0.14
+python-dotenv==1.0.1
+psycopg2-binary==2.9.9
+alembic==1.13.1
+structlog==24.1.0
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
