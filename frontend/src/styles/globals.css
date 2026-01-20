@@ -1,0 +1,216 @@
+/**
+ * Global Styles and Tailwind CSS
+ * Phase II - Todo Full-Stack Web Application
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+ * CSS Reset and Base Styles
+ * ========================================================================= */
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-gray-900;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+
+  a {
+    @apply text-primary-600 hover:text-primary-700 transition-colors;
+  }
+
+  /* Focus styles for accessibility */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+}
+
+/* ============================================================================
+ * Custom Component Styles
+ * ========================================================================= */
+
+@layer components {
+  /* Button variants */
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700
+           focus:ring-primary-500 shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300
+           focus:ring-gray-500;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger text-white hover:bg-danger-dark
+           focus:ring-danger;
+  }
+
+  .btn-success {
+    @apply btn bg-success text-white hover:bg-success-dark
+           focus:ring-success;
+  }
+
+  /* Input fields */
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-md
+           focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+           disabled:bg-gray-100 disabled:cursor-not-allowed
+           transition-colors;
+  }
+
+  .input-error {
+    @apply input border-danger focus:border-danger focus:ring-danger;
+  }
+
+  /* Card component */
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 transition-shadow
+           hover:shadow-lg;
+  }
+
+  /* Alert messages */
+  .alert {
+    @apply p-4 rounded-md mb-4;
+  }
+
+  .alert-error {
+    @apply alert bg-danger-light text-danger-dark border border-danger;
+  }
+
+  .alert-success {
+    @apply alert bg-success-light text-success-dark border border-success;
+  }
+
+  .alert-warning {
+    @apply alert bg-warning-light text-warning-dark border border-warning;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    @apply inline-block h-5 w-5 animate-spin rounded-full
+           border-2 border-solid border-current border-r-transparent
+           align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite];
+  }
+}
+
+/* ============================================================================
+ * Utility Classes
+ * ========================================================================= */
+
+@layer utilities {
+  /* Text overflow ellipsis */
+  .text-ellipsis {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  /* Scrollbar styles */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded hover:bg-gray-400;
+  }
+
+  /* Glassmorphism effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md;
+  }
+}
+
+/* ============================================================================
+ * Animations
+ * ========================================================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+ * Dark Mode (optional, not required for MVP)
+ * ========================================================================= */
+
+@media (prefers-color-scheme: dark) {
+  .dark body {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  .dark .card {
+    @apply bg-gray-800 border border-gray-700;
+  }
+
+  .dark .input {
+    @apply bg-gray-800 border-gray-700 text-gray-100;
+  }
+}
+
+.modal-open {
+  overflow: hidden;
+}
