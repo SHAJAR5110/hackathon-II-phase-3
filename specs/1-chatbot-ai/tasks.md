@@ -321,14 +321,14 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
 
 #### Endpoint Foundation
 
-- [ ] T029 Create chat endpoint skeleton in `backend/src/routes/chat.py`:
+- [x] T029 Create chat endpoint skeleton in `backend/src/routes/chat.py`:
   - Route: `POST /api/{user_id}/chat`
   - Auth: Require user_id in path matches authenticated user (via get_current_user dependency)
   - Request body: `{conversation_id?: int, message: string}`
   - Response body: `{conversation_id: int, response: string, tool_calls: [{tool: string, params: dict}]}`
   - Error responses: `{error: string, request_id: string}` (500, 400, 401)
 
-- [ ] T030 Implement conversation retrieval in `backend/src/routes/chat.py`:
+- [x] T030 Implement conversation retrieval in `backend/src/routes/chat.py`:
   - If conversation_id provided in request:
     - Load Conversation from database via ConversationRepository
     - Verify conversation.user_id == authenticated user_id
@@ -338,27 +338,27 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
     - Initialize with empty message history
   - Return conversation_id to client
 
-- [ ] T031 Implement user message storage in `backend/src/routes/chat.py`:
+- [x] T031 Implement user message storage in `backend/src/routes/chat.py`:
   - Generate message_id via store.generate_item_id("message", thread, context)
   - Create Message object: {user_id, conversation_id, role="user", content=request.message, created_at=now}
   - Store to database via MessageRepository.create()
   - Commit transaction
 
-- [ ] T032 Implement agent execution in `backend/src/routes/chat.py`:
+- [x] T032 Implement agent execution in `backend/src/routes/chat.py`:
   - Call agent_context_builder with conversation_history
   - Call agent_runner with (history, user_message, user_id)
   - Handle timeout (30s) → return error response
   - Handle API unavailable → return error response
   - Extract response text and tool_calls from agent result
 
-- [ ] T033 Implement assistant response storage in `backend/src/routes/chat.py`:
+- [x] T033 Implement assistant response storage in `backend/src/routes/chat.py`:
   - Generate message_id via store.generate_item_id()
   - Create Message: {user_id, conversation_id, role="assistant", content=agent_response, created_at=now}
   - Store to database via MessageRepository.create()
   - Extract tool_calls array from agent execution
   - Commit transaction
 
-- [ ] T034 Implement response formatting in `backend/src/routes/chat.py`:
+- [x] T034 Implement response formatting in `backend/src/routes/chat.py`:
   - Format JSON response:
     ```json
     {
@@ -374,7 +374,7 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
 
 #### User Story 1: Add Task via Natural Language (P1)
 
-- [ ] T035 [US1] Implement add_task flow in chat endpoint:
+- [x] T035 [US1] Implement add_task flow in chat endpoint:
   - User message: "Add a task to buy groceries"
   - Agent calls add_task(user_id, title="Buy groceries", description=null)
   - MCP tool creates task in database
@@ -382,13 +382,13 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
   - Return response + tool_calls to client
   - Verify: Task appears in database, conversation history updated
 
-- [ ] T036 [US1] Handle task creation with description:
+- [x] T036 [US1] Handle task creation with description:
   - User message: "Add a task to buy groceries with milk, eggs, and bread"
   - Agent extracts title and description
   - Call add_task with both parameters
   - Response confirms both title and description stored
 
-- [ ] T037 [US1] Handle ambiguous task creation:
+- [x] T037 [US1] Handle ambiguous task creation:
   - User message: "Add something"
   - Agent recognizes incomplete request
   - Agent asks clarification: "What would you like to add?"
@@ -397,20 +397,20 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
 
 #### User Story 2: List and Filter Tasks (P1)
 
-- [ ] T038 [US2] Implement list_tasks all flow:
+- [x] T038 [US2] Implement list_tasks all flow:
   - User message: "Show me all my tasks"
   - Agent calls list_tasks(user_id, status="all")
   - MCP tool returns array of all tasks
   - Agent formats readable list: "You have 3 tasks: 1) Buy groceries, 2) Call mom, 3) Finish project"
   - Response returned to client
 
-- [ ] T039 [US2] Implement list_tasks pending filter:
+- [x] T039 [US2] Implement list_tasks pending filter:
   - User message: "What's pending?"
   - Agent calls list_tasks(user_id, status="pending")
   - Only incomplete tasks returned
   - Agent lists pending items only
 
-- [ ] T040 [US2] Handle empty task list:
+- [x] T040 [US2] Handle empty task list:
   - User message: "Show me all my tasks"
   - list_tasks returns empty array
   - Agent responds: "You have no tasks yet. Want to add one?"
@@ -418,21 +418,21 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
 
 #### User Story 3: Complete Task via Conversation (P1)
 
-- [ ] T041 [US3] Implement complete_task by ID:
+- [x] T041 [US3] Implement complete_task by ID:
   - User message: "Mark task 1 as complete"
   - Agent calls complete_task(user_id, task_id=1)
   - Task updated: completed=true
   - Agent confirms: "I've marked 'Buy groceries' as complete!"
   - Response includes tool_calls
 
-- [ ] T042 [US3] Implement complete_task by ambiguous reference:
+- [x] T042 [US3] Implement complete_task by ambiguous reference:
   - User message: "I finished the meeting"
   - Agent calls list_tasks(user_id) to get all tasks
   - Finds multiple pending tasks including "Meeting" item
   - Agent asks: "I found 'Meeting' task. Is that the one you finished?"
   - Wait for confirmation, then call complete_task
 
-- [ ] T043 [US3] Handle task not found:
+- [x] T043 [US3] Handle task not found:
   - User message: "Mark task 999 as complete"
   - complete_task returns error (task_not_found)
   - Agent handles gracefully: "I couldn't find task 999. Here are your pending tasks: ..."
@@ -440,13 +440,13 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
 
 #### User Story 4: Update Task Description (P2)
 
-- [ ] T044 [US4] Implement update_task title:
+- [x] T044 [US4] Implement update_task title:
   - User message: "Change task 1 to 'Call mom tonight'"
   - Agent calls update_task(user_id, task_id=1, title="Call mom tonight")
   - Task.title updated in database
   - Agent confirms: "I've updated task 1 to 'Call mom tonight'"
 
-- [ ] T045 [US4] Implement update_task description:
+- [x] T045 [US4] Implement update_task description:
   - User message: "Add details to task 1: remember to buy organic milk"
   - Agent calls update_task(user_id, task_id=1, description="remember to buy organic milk")
   - Task.description updated
@@ -454,13 +454,13 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
 
 #### User Story 5: Delete Task (P2)
 
-- [ ] T046 [US5] Implement delete_task by ID:
+- [x] T046 [US5] Implement delete_task by ID:
   - User message: "Delete task 4"
   - Agent calls delete_task(user_id, task_id=4)
   - Task removed from database
   - Agent confirms: "I've deleted 'Old meeting' task"
 
-- [ ] T047 [US5] Implement delete_task with ambiguity:
+- [x] T047 [US5] Implement delete_task with ambiguity:
   - User message: "Delete the task"
   - Agent calls list_tasks to get pending tasks
   - Multiple tasks exist
@@ -469,14 +469,14 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
 
 #### User Story 6: Maintain Conversation Context (P1)
 
-- [ ] T048 [US6] Implement conversation history across turns:
+- [x] T048 [US6] Implement conversation history across turns:
   - Message 1: "Add a task to buy groceries"
   - Message 2: "Show me all my tasks" (agent has context from msg 1)
   - Message 3: "Mark task 1 as complete" (agent knows task 1 = "buy groceries")
   - Agent references prior messages correctly
   - Conversation ID persists across all 3 messages
 
-- [ ] T049 [US6] Implement conversation resume after page refresh:
+- [x] T049 [US6] Implement conversation resume after page refresh:
   - User sends 5 messages in conversation 1
   - Frontend refreshes page
   - User requests conversation_id=1 in next request
@@ -484,7 +484,7 @@ Implement POST `/api/{user_id}/chat` endpoint and complete all 6 user story flow
   - Agent has full context: "I remember we added 'Buy groceries' earlier..."
   - No data loss, seamless continuation
 
-- [ ] T050 [US6] Implement server restart resilience:
+- [x] T050 [US6] Implement server restart resilience:
   - Conversation with 10 messages exists in database
   - Server restarts (process dies)
   - Server starts again
