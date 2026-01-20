@@ -254,13 +254,13 @@ Integrate OpenAI Agents SDK with conversation context, MCP tools, and ChatKit's 
 
 ### Tasks
 
-- [ ] T023 Create agent configuration in `backend/src/agents/config.py`:
+- [x] T023 Create agent configuration in `backend/src/agents/config.py`:
   - System prompt: "You are a helpful task management assistant. Help users manage their todo tasks using natural language. Available tools: add_task, list_tasks, complete_task, delete_task, update_task. Always confirm actions and provide friendly responses."
   - Load model from environment (default: "openai/gpt-4o", supports "gemini/gemini-2.0-flash" via LiteLLM)
   - Configure via LitellmModel from agents.extensions.models.litellm_model
   - Timeout: 30 seconds
 
-- [ ] T024 [P] Create message history converter in `backend/src/agents/converter.py`:
+- [x] T024 [P] Create message history converter in `backend/src/agents/converter.py`:
   - Import ThreadItemConverter from chatkit.agents
   - Convert Message ORM objects → ThreadItem format
   - Handle user messages: role="user", content
@@ -268,21 +268,21 @@ Integrate OpenAI Agents SDK with conversation context, MCP tools, and ChatKit's 
   - Return list in chronological order (oldest first)
   - Handle large histories: pass last 30 messages if > 100 messages total
 
-- [ ] T025 [P] Create agent context builder in `backend/src/agents/context.py`:
+- [x] T025 [P] Create agent context builder in `backend/src/agents/context.py`:
   - Load conversation from database
   - Load all messages for conversation via MessageRepository
   - Build conversation_history array using ThreadItemConverter
   - Include current user_id in context for tool access
   - Return: {conversation_history: [], user_id: str, conversation_id: int}
 
-- [ ] T026 [P] Create ID mapping fix in `backend/src/agents/id_mapping.py` (LiteLLM collision prevention):
+- [x] T026 [P] Create ID mapping fix in `backend/src/agents/id_mapper.py` (LiteLLM collision prevention):
   - Track mapping: {provider_id → generated_id}
   - When agent returns message with provider ID
   - Generate new unique ID via store.generate_item_id("message", thread, context)
   - Update ThreadItemAddedEvent.item.id with new ID
   - Apply same mapping to ThreadItemUpdatedEvent, ThreadItemDoneEvent
 
-- [ ] T027 [P] Create agent runner in `backend/src/agents/runner.py`:
+- [x] T027 [P] Create agent runner in `backend/src/agents/runner.py`:
   - Initialize Agent from config
   - Accept: conversation_history (list), user_message (str), user_id (str), context (dict)
   - Prepare agent input: [history_items..., new_user_message]
@@ -292,7 +292,7 @@ Integrate OpenAI Agents SDK with conversation context, MCP tools, and ChatKit's 
   - Return: {response: str, tool_calls: [{tool: str, params: dict}]}
   - Error handling: timeout → "I'm having trouble reaching my brain. Please try again."
 
-- [ ] T028 Create integration test for agent in `backend/tests/test_agent_integration.py`:
+- [x] T028 Create integration test for agent in `backend/src/tests/test_agent_integration.py`:
   - Create test conversation with 5 prior messages
   - Call agent with "Add a task to buy milk"
   - Verify agent calls add_task tool with correct parameters
