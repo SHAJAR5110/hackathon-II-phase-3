@@ -41,15 +41,15 @@ Initialize FastAPI backend, configure dependencies, environment variables, and l
 
 ### Tasks
 
-- [ ] T001 Create backend directory structure in `backend/src/` with subdirectories: `models/`, `repositories/`, `routes/`, `middleware/`, `mcp_server/`, `agents/`, `services/`, `tests/`
+- [x] T001 Create backend directory structure in `backend/src/` with subdirectories: `models/`, `repositories/`, `routes/`, `middleware/`, `mcp_server/`, `agents/`, `services/`, `tests/`
 
-- [ ] T002 [P] Create FastAPI application in `backend/src/main.py`:
+- [x] T002 [P] Create FastAPI application in `backend/src/main.py`:
   - Initialize FastAPI app with title "AI Todo Chatbot"
   - Configure CORS for frontend domain
   - Add middleware for logging and error handling
   - Include health check endpoint `GET /health`
 
-- [ ] T003 [P] Create requirements.txt in `backend/` with dependencies:
+- [x] T003 [P] Create requirements.txt in `backend/` with dependencies:
   - fastapi==0.115.6
   - uvicorn[standard]==0.32.1
   - openai-chatkit<=1.4.0
@@ -59,7 +59,7 @@ Initialize FastAPI backend, configure dependencies, environment variables, and l
   - psycopg2-binary==2.9.9
   - alembic==1.13.1
 
-- [ ] T004 [P] Create environment configuration in `backend/.env.example`:
+- [x] T004 [P] Create environment configuration in `backend/.env.example`:
   - NEON_DATABASE_URL=postgresql://user:password@host/db
   - OPENAI_API_KEY=sk-...
   - BETTER_AUTH_SECRET=your-secret-key
@@ -68,7 +68,7 @@ Initialize FastAPI backend, configure dependencies, environment variables, and l
   - MCP_PORT=8001
   - LOG_LEVEL=INFO
 
-- [ ] T005 [P] Create logging configuration in `backend/src/logging_config.py`:
+- [x] T005 [P] Create logging configuration in `backend/src/logging_config.py`:
   - Configure structlog for JSON logging
   - Add context processors: user_id, conversation_id, tool_name
   - Set log level from environment
@@ -91,19 +91,19 @@ Define database schema, create SQLModel ORM models, set up Neon PostgreSQL conne
 
 ### Tasks
 
-- [ ] T006 Create SQLModel models in `backend/src/models/__init__.py`:
+- [x] T006 Create SQLModel models in `backend/src/models/__init__.py`:
   - **User**: user_id (str, PK), created_at, updated_at
   - **Task**: id (int, PK), user_id (FK), title (str, max 1000), description (str, max 1000), completed (bool), created_at, updated_at
   - **Conversation**: id (int, PK), user_id (FK), created_at, updated_at
   - **Message**: id (int, PK), user_id (FK), conversation_id (FK), role (enum: user/assistant), content (text), created_at
 
-- [ ] T007 [P] Create SQLAlchemy engine & session in `backend/src/db.py`:
+- [x] T007 [P] Create SQLAlchemy engine & session in `backend/src/db.py`:
   - Parse NEON_DATABASE_URL from environment
   - Configure engine with echo=False, pool_size=20, max_overflow=0
   - Create Session factory with sessionmaker
   - Include circuit breaker for connection failures
 
-- [ ] T008 [P] Create Alembic migration in `backend/migrations/versions/001_initial_schema.py`:
+- [x] T008 [P] Create Alembic migration in `backend/migrations/versions/001_initial_schema.py`:
   - CREATE TABLE users (user_id VARCHAR PRIMARY KEY)
   - CREATE TABLE tasks (id SERIAL, user_id FK, title VARCHAR, description VARCHAR, completed BOOLEAN, timestamps)
   - CREATE TABLE conversations (id SERIAL, user_id FK, timestamps)
@@ -111,13 +111,13 @@ Define database schema, create SQLModel ORM models, set up Neon PostgreSQL conne
   - Add indexes on user_id, conversation_id, created_at
   - Add UNIQUE constraints: (user_id, id) on tasks/conversations
 
-- [ ] T009 [P] Create repository layer in `backend/src/repositories/`:
+- [x] T009 [P] Create repository layer in `backend/src/repositories/`:
   - **TaskRepository**: create(), read(), update(), delete(), list_by_user(status), list_by_conversation()
   - **ConversationRepository**: create(), read(), list_by_user()
   - **MessageRepository**: create(), list_by_conversation(limit, offset), count_by_conversation()
   - All methods accept session and user_id for permission checking
 
-- [ ] T010 [P] Create database utilities in `backend/src/db_utils.py`:
+- [x] T010 [P] Create database utilities in `backend/src/db_utils.py`:
   - async_get_db_session() context manager
   - health_check() function testing database connection
   - get_db_pool_status() returning connection pool statistics
