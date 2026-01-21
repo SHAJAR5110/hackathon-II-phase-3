@@ -1,10 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import AuthLayout from '@/components/AuthLayout';
-import SignupForm from '@/components/SignupForm';
-import { useAuth } from '@/lib/use-auth';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import AuthLayout from "@/components/AuthLayout";
+import SignupForm from "@/components/SignupForm";
+import { useAuth } from "@/lib/use-auth";
+
+export const dynamic = "force-dynamic";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -13,7 +15,7 @@ export default function SignupPage() {
   useEffect(() => {
     // Redirect to dashboard if already authenticated
     if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [isAuthenticated, isLoading, router]);
 

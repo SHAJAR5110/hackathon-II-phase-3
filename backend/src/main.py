@@ -16,6 +16,7 @@ from .middleware.auth import auth_middleware
 from .middleware.errors import error_handling_middleware
 from .middleware.logging_middleware import logging_middleware
 from .routes import chat_router
+from .routes.auth import router as auth_router
 
 # Load environment variables
 load_dotenv()
@@ -28,12 +29,12 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events
-    
+
     NOTE: MCP Server Integration (Phase 7)
     The MCP server for tool management is currently initialized in registry.py
     but not actively used in the agent pipeline yet. Full OpenAI Agents SDK
     integration with MCP tools will be implemented in Phase 7 (Frontend Integration).
-    
+
     When ready to implement:
     1. Import MCP server: from .mcp_server import start_server
     2. Start in lifespan: server = start_server()
@@ -78,6 +79,7 @@ app.middleware("http")(auth_middleware)
 app.middleware("http")(logging_middleware)
 
 # Include routers
+app.include_router(auth_router)
 app.include_router(chat_router)
 
 

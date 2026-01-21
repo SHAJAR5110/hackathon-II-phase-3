@@ -17,6 +17,9 @@ class User(SQLModel, table=True):
     """User model - authenticated user"""
 
     user_id: str = Field(primary_key=True, index=True, max_length=255)
+    email: str = Field(unique=True, index=True, max_length=255)
+    name: str = Field(max_length=255)
+    hashed_password: str = Field(max_length=255)
     created_at: datetime = Field(
         default_factory=datetime.utcnow,
         sa_column=Column(DateTime, server_default=func.now()),

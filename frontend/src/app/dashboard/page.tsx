@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Task, TaskCreateRequest, api } from '@/lib/api';
-import TaskForm from '@/components/TaskForm';
-import TaskList from '@/components/TaskList';
-import Header from '@/components/Header';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { AlertCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from "react";
+import { Task, TaskCreateRequest, api } from "@/lib/api";
+import TaskForm from "@/components/TaskForm";
+import TaskList from "@/components/TaskList";
+import Header from "@/components/Header";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import ChatBotPopup from "@/components/ChatBotPopup";
+import { AlertCircle } from "lucide-react";
 
 function DashboardContent() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -24,7 +25,7 @@ function DashboardContent() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed to load tasks');
+        setError("Failed to load tasks");
       }
     } finally {
       setLoading(false);
@@ -40,10 +41,10 @@ function DashboardContent() {
     try {
       const newTask = await api.createTask(data);
       setTasks((prev) => [newTask, ...prev]); // Add to beginning
-      showSuccess('Task created successfully!');
+      showSuccess("Task created successfully!");
     } catch (err: unknown) {
       throw new Error(
-        err instanceof Error ? err.message : 'Failed to create task'
+        err instanceof Error ? err.message : "Failed to create task",
       );
     }
   };
@@ -56,10 +57,10 @@ function DashboardContent() {
         description: updatedTask.description,
       });
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-      showSuccess('Task updated successfully!');
+      showSuccess("Task updated successfully!");
     } catch (err: unknown) {
       throw new Error(
-        err instanceof Error ? err.message : 'Failed to update task'
+        err instanceof Error ? err.message : "Failed to update task",
       );
     }
   };
@@ -73,7 +74,7 @@ function DashboardContent() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed to toggle task');
+        setError("Failed to toggle task");
       }
     }
   };
@@ -83,12 +84,12 @@ function DashboardContent() {
     try {
       await api.deleteTask(taskId);
       setTasks((prev) => prev.filter((t) => t.id !== taskId));
-      showSuccess('Task deleted successfully!');
+      showSuccess("Task deleted successfully!");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed to delete task');
+        setError("Failed to delete task");
       }
     }
   };
@@ -102,6 +103,7 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <ChatBotPopup />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Success Message */}
@@ -131,7 +133,9 @@ function DashboardContent() {
           {/* Left Column: Task Form */}
           <div className="lg:col-span-1">
             <div className="card sticky top-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Task</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Create New Task
+              </h2>
               <TaskForm onSubmit={handleCreateTask} />
             </div>
           </div>
@@ -140,15 +144,17 @@ function DashboardContent() {
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
-                My Tasks{' '}
-                <span className="text-lg font-normal text-gray-500">({tasks.length})</span>
+                My Tasks{" "}
+                <span className="text-lg font-normal text-gray-500">
+                  ({tasks.length})
+                </span>
               </h2>
               <button
                 onClick={fetchTasks}
                 disabled={loading}
                 className="text-sm text-primary-600 hover:text-primary-700 font-medium"
               >
-                {loading ? 'Refreshing...' : 'Refresh'}
+                {loading ? "Refreshing..." : "Refresh"}
               </button>
             </div>
 
