@@ -79,14 +79,23 @@ def delete_task(
         # If task_name provided, search by name
         elif task_name:
             # Get all tasks and find matching one
-            from sqlalchemy import select
+            from sqlalchemy import select, func
             from ...models import Task
 
+            # Try exact match first
             statement = select(Task).where(
                 (Task.user_id == user_id) &
                 (Task.title == task_name)
             )
             task = db.exec(statement).first()
+
+            # If no exact match, try case-insensitive match
+            if not task:
+                statement = select(Task).where(
+                    (Task.user_id == user_id) &
+                    (func.lower(Task.title) == func.lower(task_name))
+                )
+                task = db.exec(statement).first()
 
             if not task:
                 logger.warning(
