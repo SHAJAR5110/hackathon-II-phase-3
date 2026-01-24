@@ -133,10 +133,11 @@ export default function ChatBot({
           onConversationIdChange?.(data.conversation_id);
         }
 
-        // Add assistant message
+        // Add assistant message - strip JSON tool calls block
+        const cleanResponse = stripToolCalls(data.response);
         const assistantMessage: Message = {
           role: "assistant",
-          content: data.response,
+          content: cleanResponse,
         };
         setMessages((prev) => [...prev, assistantMessage]);
 
@@ -191,6 +192,16 @@ export default function ChatBot({
     }
     // Fallback to empty string - API will reject without token
     return "";
+  };
+
+  /**
+   * Strip <TOOL_CALLS> JSON blocks from response to hide implementation details
+   */
+  const stripToolCalls = (response: string): string => {
+    // Remove both uppercase and lowercase variants
+    return response
+      .replace(/<TOOL_CALLS>[\s\S]*?<\/TOOL_CALLS>/gi, "")
+      .trim();
   };
 
   /**

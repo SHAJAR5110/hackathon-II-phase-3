@@ -116,13 +116,18 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleComplete }:
 
           {/* Task Content */}
           <div className="flex-1 min-w-0">
-            <h3
-              className={`font-medium text-gray-900 mb-1 ${
-                task.completed ? 'line-through text-gray-500' : ''
-              }`}
-            >
-              {task.title}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3
+                className={`font-medium text-gray-900 ${
+                  task.completed ? 'line-through text-gray-500' : ''
+                }`}
+              >
+                {task.title}
+              </h3>
+              <span className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+                ID: {task.id}
+              </span>
+            </div>
             {task.description && (
               <p className={`text-sm text-gray-600 mb-2 ${task.completed ? 'line-through' : ''}`}>
                 {task.description}
