@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/use-auth';
 
@@ -16,6 +16,13 @@ export default function ProtectedRoute({
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
+  // Handle redirect in useEffect to avoid setState during render
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push(redirectTo);
+    }
+  }, [isAuthenticated, isLoading, router, redirectTo]);
+
   if (isLoading) {
     // Show a loading indicator while checking auth status
     return (
@@ -26,11 +33,8 @@ export default function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    // Redirect to signin page if not authenticated
-    if (typeof window !== 'undefined') {
-      router.push(redirectTo);
-    }
-    return null; // Render nothing while redirecting
+    // Return null while redirecting
+    return null;
   }
 
   // If authenticated, render the protected content
