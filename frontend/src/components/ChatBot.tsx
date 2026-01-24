@@ -6,6 +6,7 @@ interface ChatBotProps {
   userId: string;
   conversationId?: number | null;
   onConversationIdChange?: (id: number) => void;
+  onTasksModified?: () => void; // Callback when tasks are modified
 }
 
 interface Message {
@@ -38,6 +39,7 @@ export default function ChatBot({
   userId,
   conversationId,
   onConversationIdChange,
+  onTasksModified,
 }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -145,6 +147,25 @@ export default function ChatBot({
             data.conversation_id.toString(),
           );
         }
+
+        // Detect if any task-modifying tools were called
+        const taskModifyingTools = [
+          "add_task",
+          "delete_task",
+          "update_task",
+          "complete_task",
+        ];
+        const wasTaskModified = data.tool_calls?.some((call) =>
+          taskModifyingTools.includes(call.tool),
+        );
+
+        // Notify parent component if tasks were modified
+        if (wasTaskModified && onTasksModified) {
+          // Small delay to ensure backend has processed the operation
+          setTimeout(() => {
+            onTasksModified();
+          }, 500);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to send message");
         // Remove the user message if API call failed
@@ -154,7 +175,7 @@ export default function ChatBot({
         inputRef.current?.focus();
       }
     },
-    [userId, currentConversationId, onConversationIdChange],
+    [userId, currentConversationId, onConversationIdChange, onTasksModified],
   );
 
   /**

@@ -82,18 +82,19 @@ def delete_task(
             from sqlalchemy import select, func
             from ...models import Task
 
-            # Try exact match first
+            # Try exact match first (case-insensitive)
             statement = select(Task).where(
                 (Task.user_id == user_id) &
-                (Task.title == task_name)
+                (func.lower(Task.title) == func.lower(task_name))
             )
             task = db.exec(statement).first()
 
-            # If no exact match, try case-insensitive match
+            # If no exact match, try substring/contains match (case-insensitive)
             if not task:
+                task_name_lower = task_name.lower()
                 statement = select(Task).where(
                     (Task.user_id == user_id) &
-                    (func.lower(Task.title) == func.lower(task_name))
+                    (func.lower(Task.title).contains(task_name_lower))
                 )
                 task = db.exec(statement).first()
 

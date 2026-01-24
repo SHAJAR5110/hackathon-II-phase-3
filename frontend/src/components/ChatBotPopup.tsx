@@ -16,7 +16,11 @@ import { useAuth } from "@/lib/auth-context";
  * - Conversation persistence via localStorage
  * - Error handling and graceful degradation
  */
-export default function ChatBotPopup() {
+interface ChatBotPopupProps {
+  onTasksModified?: () => void; // Callback when tasks are modified via chat
+}
+
+export default function ChatBotPopup({ onTasksModified }: ChatBotPopupProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [conversationId, setConversationId] = useState<number | null>(null);
   const { user } = useAuth();
@@ -79,6 +83,7 @@ export default function ChatBotPopup() {
               onConversationIdChange={(id) => {
                 setConversationId(id);
               }}
+              onTasksModified={onTasksModified}
             />
           </ChatBotErrorBoundary>
         </div>

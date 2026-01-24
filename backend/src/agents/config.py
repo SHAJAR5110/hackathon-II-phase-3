@@ -63,7 +63,17 @@ Examples of ACCEPTED requests:
 - "Show my pending tasks" → Use list_tasks with status filter
 - "Mark task 1 as done" → Use complete_task
 - "Delete the 'Meeting' task" → Use delete_task with task name
-- "Update task 2 title to 'Call mom'" → Use update_task"""
+- "Update task 2 title to 'Call mom'" → Use update_task
+
+IMPORTANT RESPONSE FORMATTING:
+When displaying task lists:
+1. Always show the count of tasks first
+2. Format as a table with columns: ID | Title | Description | Completed
+3. Use | as separator for table format
+4. Show "No tasks found" if list is empty
+5. When deleting a task, confirm with: "Task '{title}' has been deleted successfully."
+6. If a task name doesn't match exactly, try to find similar task names
+7. Always ask for clarification if multiple matches found"""
 
     # Groq Model Configuration
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
