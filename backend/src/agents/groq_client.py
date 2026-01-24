@@ -360,8 +360,21 @@ Only include tools that are actually needed for the user's request."""
         Returns:
             str: Response text without tool calls
         """
-        if "<TOOL_CALLS>" in response:
-            return response[: response.find("<TOOL_CALLS>")].strip()
+        # Handle both uppercase and lowercase tool call markers
+        start_upper = response.find("<TOOL_CALLS>")
+        start_lower = response.find("<tool_calls>")
+
+        # Find the earliest marker (if any)
+        start = -1
+        if start_upper >= 0 and start_lower >= 0:
+            start = min(start_upper, start_lower)
+        elif start_upper >= 0:
+            start = start_upper
+        elif start_lower >= 0:
+            start = start_lower
+
+        if start >= 0:
+            return response[:start].strip()
         return response
 
 
