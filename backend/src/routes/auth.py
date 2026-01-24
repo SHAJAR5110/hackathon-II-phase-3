@@ -25,7 +25,11 @@ from ..models import User
 logger = get_logger(__name__)
 
 # Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Using Argon2 (winner of Password Hashing Competition)
+# - More secure than bcrypt
+# - No arbitrary byte limit like bcrypt (72 bytes)
+# - Memory-hard and time-hard algorithm
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # JWT configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
@@ -79,24 +83,17 @@ class UserResponse(BaseModel):
 
 
 def hash_password(password: str) -> str:
-    """Hash a password using bcrypt
+    """Hash a password using Argon2
 
-    Bcrypt has a 72-byte limit, so we truncate passwords to 72 bytes
-    to prevent "password too long" errors while maintaining security
+    Argon2 is the winner of the Password Hashing Competition.
+    It's more secure than bcrypt and has no arbitrary byte limit.
     """
-    # Truncate to 72 bytes (bcrypt limit)
-    truncated = password.encode()[:72].decode('utf-8', errors='ignore')
-    return pwd_context.hash(truncated)
+    return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash
-
-    Must truncate to same 72-byte limit as hash_password for consistency
-    """
-    # Truncate to 72 bytes (same as hash_password)
-    truncated = plain_password.encode()[:72].decode('utf-8', errors='ignore')
-    return pwd_context.verify(truncated, hashed_password)
+    """Verify a password against its Argon2 hash"""
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
