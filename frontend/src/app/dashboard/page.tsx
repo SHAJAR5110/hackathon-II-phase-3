@@ -20,13 +20,14 @@ function DashboardContent() {
     try {
       setError(null);
       const data = await api.getTasks();
-      setTasks(data.tasks);
+      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError("Failed to load tasks");
       }
+      setTasks([]);
     } finally {
       setLoading(false);
     }
