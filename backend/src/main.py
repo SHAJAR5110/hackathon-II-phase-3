@@ -21,7 +21,7 @@ from .logging_config import get_logger, setup_logging
 from .middleware.auth import auth_middleware
 from .middleware.errors import error_handling_middleware
 from .middleware.logging_middleware import logging_middleware
-from .routes import chat_router, tasks_router
+from .routes import chat_router, tasks_router, users_router
 from .routes.auth import router as auth_router
 
 # Setup logging
@@ -83,6 +83,7 @@ app.middleware("http")(logging_middleware)
 
 # Include routers
 app.include_router(auth_router)
+app.include_router(users_router)
 app.include_router(tasks_router)
 app.include_router(chat_router)
 
