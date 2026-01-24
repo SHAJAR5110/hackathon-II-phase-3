@@ -104,10 +104,26 @@ def delete_task(
                     user_id=user_id,
                     task_name=task_name
                 )
-                return {
-                    "error": "task_not_found",
-                    "message": f"Task with name '{task_name}' not found"
-                }
+                # Get all tasks to show user what's available
+                from sqlalchemy import select
+                from ...models import Task
+
+                all_tasks = db.exec(
+                    select(Task).where(Task.user_id == user_id)
+                ).all()
+
+                task_names = [t.title for t in all_tasks]
+                if task_names:
+                    similar = ", ".join([f"'{name}'" for name in task_names[:5]])
+                    return {
+                        "error": "task_not_found",
+                        "message": f"Task '{task_name}' not found. Available tasks: {similar}"
+                    }
+                else:
+                    return {
+                        "error": "task_not_found",
+                        "message": f"Task '{task_name}' not found. You have no tasks to delete."
+                    }
             task_id = task.id
 
         # Store task info before deletion
