@@ -241,6 +241,7 @@ class AgentRunner:
                 user_id=user_id,
                 conversation_id=conversation_id,
                 tool_calls_count=len(tool_calls_made),
+                tool_calls_made=[t.get("tool") for t in tool_calls_made],
                 response_length=len(final_response),
             )
 

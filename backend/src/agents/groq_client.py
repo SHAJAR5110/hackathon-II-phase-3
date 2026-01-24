@@ -315,22 +315,38 @@ Only include tools that are actually needed for the user's request."""
             Dict with tools list
         """
         import json
+        import re
 
         try:
-            # Look for <TOOL_CALLS>...</TOOL_CALLS> markers
-            if "<TOOL_CALLS>" in response and "</TOOL_CALLS>" in response:
-                start = response.find("<TOOL_CALLS>") + len("<TOOL_CALLS>")
-                end = response.find("</TOOL_CALLS>")
-                json_str = response[start:end].strip()
+            # Look for <TOOL_CALLS>...</TOOL_CALLS> markers (case-insensitive)
+            if "<TOOL_CALLS>" in response or "<tool_calls>" in response:
+                # Find markers (handle both cases)
+                start_marker = response.find("<TOOL_CALLS>")
+                end_marker = response.find("</TOOL_CALLS>")
 
-                # Parse JSON
-                tool_calls_data = json.loads(json_str)
-                return tool_calls_data
+                if start_marker == -1:
+                    start_marker = response.find("<tool_calls>")
+                    end_marker = response.find("</tool_calls>")
 
+                if start_marker >= 0 and end_marker >= 0:
+                    start = start_marker + (len("<TOOL_CALLS>") if "<TOOL_CALLS>" in response else len("<tool_calls>"))
+                    json_str = response[start:end_marker].strip()
+
+                    # Try to parse JSON
+                    if json_str:
+                        tool_calls_data = json.loads(json_str)
+                        logger.info(
+                            "tool_calls_extracted",
+                            tools_found=len(tool_calls_data.get("tools", []))
+                        )
+                        return tool_calls_data
+
+            logger.debug("no_tool_calls_in_response",
+                        has_tool_markers="<TOOL_CALLS>" in response or "<tool_calls>" in response)
             return {"tools": []}
 
-        except (json.JSONDecodeError, ValueError, AttributeError):
-            logger.warning("Failed to parse tool calls from response")
+        except (json.JSONDecodeError, ValueError, AttributeError) as e:
+            logger.warning("Failed to parse tool calls from response", error=str(e))
             return {"tools": []}
 
     @staticmethod

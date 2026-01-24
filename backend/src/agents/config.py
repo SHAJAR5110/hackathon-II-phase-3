@@ -69,6 +69,20 @@ Examples of ACCEPTED requests and REQUIRED BEHAVIOR:
 
 CRITICAL: When user explicitly says "delete", "remove", or confirms with "yes", IMMEDIATELY call delete_task. Do not ask again.
 
+CRITICAL: TOOL CALL FORMAT
+You MUST include tool calls in this exact JSON format after your response text:
+
+<TOOL_CALLS>
+{
+  "tools": [
+    {"name": "delete_task", "params": {"task_name": "shajar"}},
+    {"name": "list_tasks", "params": {"status": "all"}}
+  ]
+}
+</TOOL_CALLS>
+
+NO EXCEPTIONS: If user asks to delete/add/update/complete a task, ALWAYS include the <TOOL_CALLS> block at the end with the JSON.
+
 IMPORTANT RESPONSE FORMATTING:
 When displaying task lists:
 1. Always show the count of tasks first
