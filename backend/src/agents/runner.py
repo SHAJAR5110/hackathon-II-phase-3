@@ -1,10 +1,11 @@
 """
 Agent Runner Module
-Executes OpenAI Agent with MCP tool support
-Handles tool invocation, error handling, and response collection
+Executes Groq Agent with MCP tool support
+Handles tool invocation, error handling, and response collection using Groq API
 """
 
 import asyncio
+import json
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..db import SessionLocal
@@ -12,6 +13,7 @@ from ..logging_config import get_logger
 from ..mcp_server.registry import call_tool
 from ..repositories import MessageRepository
 from .config import AgentConfig
+from .groq_client import GroqClient
 from .id_mapper import IDMapper, get_id_mapper, reset_id_mapper
 from .models_adapter import LiteLLMModelAdapter
 
@@ -42,26 +44,36 @@ class AgentResponse:
 
 
 class AgentRunner:
-    """Execute OpenAI Agent with MCP tools for task management"""
+    """Execute Groq Agent with MCP tools for task management"""
 
     def __init__(self):
         """Initialize agent runner"""
         self.id_mapper: IDMapper = get_id_mapper()
-        self.model: Optional[LiteLLMModelAdapter] = None
+        self.groq_client: Optional[GroqClient] = None
         self.system_prompt: str = AgentConfig.get_system_prompt()
+        self.tool_schema: str = AgentConfig.get_tool_schema()
 
     async def initialize_agent(self) -> bool:
         """
-        Initialize the OpenAI Agent with MCP tools
+        Initialize the Groq Agent with MCP tools
 
         Returns:
             bool: True if initialization successful
         """
         try:
-            # Get configured model
-            self.model = AgentConfig.get_model()
+            # Initialize Groq client
+            self.groq_client = GroqClient(
+                model=AgentConfig.GROQ_MODEL,
+                temperature=AgentConfig.TEMPERATURE,
+                max_tokens=AgentConfig.MAX_TOKENS,
+                top_p=AgentConfig.TOP_P,
+                reasoning_effort=AgentConfig.REASONING_EFFORT,
+            )
 
-            logger.info("agent_runner_initialized")
+            logger.info(
+                "agent_runner_initialized",
+                model=AgentConfig.GROQ_MODEL,
+            )
             return True
 
         except Exception as e:
@@ -80,15 +92,16 @@ class AgentRunner:
 
         Implements full agent loop:
         1. Build message array with history + new message
-        2. Run agent with MCP tools
-        3. Collect tool results
-        4. Extract final response
+        2. Run agent with Groq API using reasoning
+        3. Extract tool calls from response
+        4. Invoke MCP tools
+        5. Return final response
 
         Parameters:
             user_id (str): The authenticated user
             conversation_id (int): Current conversation ID
             user_message (str): New message from user
-            conversation_history (List[Dict]): Prior conversation messages in ThreadItem format
+            conversation_history (List[Dict]): Prior conversation messages
 
         Returns:
             AgentResponse: Response with text, tool_calls, and any errors
@@ -99,10 +112,10 @@ class AgentRunner:
         """
         try:
             # Initialize agent if needed
-            if not self.model:
+            if not self.groq_client:
                 success = await self.initialize_agent()
                 if not success:
-                    error_msg = "Failed to initialize agent"
+                    error_msg = "Failed to initialize Groq agent"
                     logger.error("run_failed", error=error_msg)
                     return AgentResponse(
                         response="I'm having trouble starting. Please try again.",
@@ -110,16 +123,16 @@ class AgentRunner:
                         error=error_msg,
                     )
 
-            # Build message array: history + new user message
-            messages = conversation_history.copy() if conversation_history else []
+            # Convert ThreadItem format to standard message format if needed
+            messages = self._convert_messages(conversation_history)
 
             # Append new user message
-            new_message = {
-                "type": "message",
-                "role": "user",
-                "content": {"type": "text", "text": user_message},
-            }
-            messages.append(new_message)
+            messages.append(
+                {
+                    "role": "user",
+                    "content": user_message,
+                }
+            )
 
             logger.info(
                 "agent_run_starting",
@@ -142,7 +155,7 @@ class AgentRunner:
                 )
                 logger.error("agent_run_timeout", error=error_msg)
                 return AgentResponse(
-                    response="I'm having trouble reaching my brain. Please try again.",
+                    response="I'm taking too long to think. Please try again.",
                     tool_calls=[],
                     error=error_msg,
                 )
@@ -160,6 +173,40 @@ class AgentRunner:
                 error=str(e),
             )
 
+    def _convert_messages(self, conversation_history: List[Dict]) -> List[Dict]:
+        """
+        Convert ThreadItem format to standard message format
+
+        Parameters:
+            conversation_history (List[Dict]): Messages in ThreadItem format
+
+        Returns:
+            List[Dict]: Messages in standard format for Groq API
+        """
+        messages = []
+        for item in conversation_history:
+            if isinstance(item, dict):
+                # ThreadItem format: {"type": "message", "role": "user", "content": {...}}
+                if item.get("type") == "message" and "role" in item:
+                    content = item.get("content")
+                    # Extract text if content is a structured block
+                    if isinstance(content, dict):
+                        text = content.get("text", "")
+                    else:
+                        text = str(content)
+
+                    messages.append(
+                        {
+                            "role": item["role"],
+                            "content": text,
+                        }
+                    )
+                # Standard format: {"role": "user", "content": "text"}
+                elif "role" in item and "content" in item:
+                    messages.append(item)
+
+        return messages
+
     async def _execute_agent_loop(
         self,
         user_id: str,
@@ -167,7 +214,7 @@ class AgentRunner:
         messages: List[Dict],
     ) -> AgentResponse:
         """
-        Execute agent loop with tool invocation
+        Execute agent loop with tool invocation using Groq
 
         Parameters:
             user_id (str): Authenticated user
@@ -178,20 +225,19 @@ class AgentRunner:
             AgentResponse: Response with text and tool_calls
         """
         tool_calls_made: List[Dict[str, Any]] = []
-        final_response: str = ""
 
         try:
-            # Run agent with event streaming
-            # Note: This is a simplified implementation
-            # In production, would stream events and handle tool calls
-            response_text = await self._run_agent_with_tools(
+            # Run agent with Groq and tool extraction
+            response_data = await self._run_agent_with_tools(
                 user_id, conversation_id, messages, tool_calls_made
             )
 
-            final_response = response_text or "I couldn't generate a response."
+            final_response = response_data.get(
+                "response", "I couldn't generate a response."
+            )
 
             logger.info(
-                "agent_run_completed",
+                "agent_loop_completed",
                 user_id=user_id,
                 conversation_id=conversation_id,
                 tool_calls_count=len(tool_calls_made),
@@ -218,27 +264,16 @@ class AgentRunner:
         conversation_id: int,
         messages: List[Dict],
         tool_calls_list: List[Dict],
-    ) -> str:
+    ) -> Dict[str, Any]:
         """
-        Run agent and handle tool invocations
+        Run Groq agent and handle tool invocations
 
-        PLACEHOLDER IMPLEMENTATION FOR PHASE 7:
-        This method is currently a placeholder that returns a static response.
-        Full OpenAI Agents SDK integration with tool invocation will be implemented
-        in Phase 7 (Frontend Integration) when the ChatKit frontend is ready to call
-        this endpoint with proper session context.
-
-        Current implementation:
-        - Returns a static greeting response
-        - Captures message context for future tool invocation
-        - Maintains structure ready for tool loop implementation
-
-        Future implementation (Phase 7) will:
-        - Stream events from OpenAI Agents SDK runner
-        - Extract tool_call events and invoke MCP tools
-        - Chain multiple tool calls in single turn
-        - Collect tool results back to agent for synthesis
-        - Extract final text response from events
+        Implementation:
+        1. Send messages to Groq API with extended thinking
+        2. Extract tool calls from response using structured prompting
+        3. Invoke MCP tools based on identified needs
+        4. Collect tool results and invoke agent again if needed
+        5. Return final response with all tool calls made
 
         Parameters:
             user_id (str): Authenticated user
@@ -247,50 +282,129 @@ class AgentRunner:
             tool_calls_list (List[Dict]): Output list for tool calls made
 
         Returns:
-            str: Final response text from agent
+            Dict with response text and any errors
         """
         try:
-            # In production, would iterate through events from runner
-            # For now, this is a simplified implementation
-            # This would be integrated with OpenAI Agents SDK event streaming
-
-            # Log agent execution with message context
             logger.info(
                 "agent_with_tools_executing",
                 user_id=user_id,
                 conversation_id=conversation_id,
                 total_messages=len(messages),
+                model=AgentConfig.GROQ_MODEL,
             )
 
-            # Mock response (in production, extract from agent events)
-            response_text = (
-                "I'm ready to help you manage your tasks. What would you like to do?"
+            # Get response from Groq with tool extraction
+            tool_extraction_result = await self.groq_client.extract_tool_calls(
+                messages=messages,
+                system_prompt=self.system_prompt,
+                tool_schema=self.tool_schema,
             )
 
-            # Example of how tool calls would be captured when using OpenAI Agents SDK:
-            # for event in events:
-            #     if event.type == "tool_call":
-            #         tool_name = event.tool_name
-            #         tool_input = event.tool_input
-            #         result = await self._invoke_tool(user_id, tool_name, tool_input)
-            #         tool_calls_list.append({
-            #             "tool": tool_name,
-            #             "params": tool_input,
-            #             "result": result,
-            #         })
+            response_text = tool_extraction_result.get("response", "")
+            tools_identified = tool_extraction_result.get("tools_identified", [])
+
+            # Invoke identified tools and collect results
+            tool_results = []
+            for tool_spec in tools_identified:
+                try:
+                    tool_name = tool_spec.get("name")
+                    tool_params = tool_spec.get("params", {})
+
+                    if not tool_name:
+                        logger.warning("Tool spec missing name", tool_spec=tool_spec)
+                        continue
+
+                    # Invoke MCP tool
+                    tool_result = await self._invoke_tool(
+                        user_id, tool_name, tool_params
+                    )
+
+                    tool_results.append(
+                        {
+                            "tool": tool_name,
+                            "params": tool_params,
+                            "result": tool_result,
+                            "success": "error" not in tool_result,
+                        }
+                    )
+
+                    tool_calls_list.append(
+                        {
+                            "tool": tool_name,
+                            "params": tool_params,
+                        }
+                    )
+
+                    logger.info(
+                        "tool_invoked_successfully",
+                        user_id=user_id,
+                        tool_name=tool_name,
+                        success=not ("error" in tool_result),
+                    )
+
+                except Exception as e:
+                    logger.error(
+                        "tool_invocation_error",
+                        user_id=user_id,
+                        tool_name=tool_spec.get("name", "unknown"),
+                        error=str(e),
+                    )
+                    tool_results.append(
+                        {
+                            "tool": tool_spec.get("name", "unknown"),
+                            "error": str(e),
+                            "success": False,
+                        }
+                    )
+
+            # If tools were invoked, optionally get follow-up response from agent
+            if tool_results:
+                # Build follow-up message with tool results
+                assistant_message = {
+                    "role": "assistant",
+                    "content": response_text,
+                }
+                tool_results_message = {
+                    "role": "user",
+                    "content": f"Tool execution results:\n{json.dumps(tool_results, indent=2)}",
+                }
+
+                follow_up_messages = messages + [
+                    assistant_message,
+                    tool_results_message,
+                ]
+
+                # Get follow-up response
+                try:
+                    follow_up_response = await self.groq_client.chat_complete(
+                        messages=follow_up_messages,
+                        system_prompt=self.system_prompt,
+                    )
+                    if follow_up_response:
+                        response_text = follow_up_response
+                except Exception as e:
+                    logger.warning(
+                        "follow_up_response_failed",
+                        error=str(e),
+                    )
+                    # Continue with original response if follow-up fails
 
             logger.info(
                 "agent_with_tools_completed",
                 user_id=user_id,
                 conversation_id=conversation_id,
                 tool_calls_made=len(tool_calls_list),
+                response_length=len(response_text),
             )
 
-            return response_text
+            return {
+                "response": response_text,
+                "tool_calls": tool_calls_list,
+            }
 
         except Exception as e:
             logger.error(
-                "tool_execution_failed",
+                "agent_with_tools_failed",
                 user_id=user_id,
                 conversation_id=conversation_id,
                 error=str(e),

@@ -7,8 +7,9 @@ import os
 from typing import Generator
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
+from sqlmodel import Session
 
 from .logging_config import get_logger
 
@@ -32,11 +33,12 @@ engine = create_engine(
     pool_recycle=3600,  # Recycle connections after 1 hour
 )
 
-# Create session factory
+# Create session factory with SQLModel's Session
 SessionLocal = sessionmaker(
+    bind=engine,
+    class_=Session,
     autocommit=False,
     autoflush=False,
-    bind=engine,
     expire_on_commit=False,
 )
 

@@ -7,7 +7,7 @@ Global error handling middleware for FastAPI
 - Never exposes stack traces to client
 """
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError, OperationalError
 
@@ -20,10 +20,15 @@ async def error_handling_middleware(request: Request, call_next):
     """
     Global error handling middleware
     Catches and logs all exceptions, returns structured error responses
+    HTTPException is re-raised to allow FastAPI's built-in handlers to process it
     """
     try:
         response = await call_next(request)
         return response
+
+    except HTTPException:
+        # Re-raise HTTPException so FastAPI can handle it natively
+        raise
 
     except Exception as exc:
         # Get context from request state

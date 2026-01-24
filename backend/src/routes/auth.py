@@ -18,7 +18,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
 from sqlmodel import Session, select
 
-from ..db import get_db
+from ..db import get_db_session as get_db
 from ..logging_config import get_logger
 from ..models import User
 

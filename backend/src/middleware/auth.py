@@ -5,14 +5,22 @@ Authentication middleware and authorization dependency for FastAPI
 - Provides get_current_user() dependency for protected endpoints
 """
 
+import json
+import os
 import re
 
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthCredentials, HTTPBearer
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer
+from jose import JWTError, jwt
 
 from ..logging_config import get_logger
 
 logger = get_logger(__name__)
+
+# JWT configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
+ALGORITHM = "HS256"
 
 # HTTP Bearer scheme for auth header
 security = HTTPBearer(auto_error=False)
@@ -34,6 +42,30 @@ def validate_user_id(user_id: str) -> bool:
     return bool(re.match(pattern, user_id))
 
 
+# Public paths that don't require authentication
+PUBLIC_PATHS = [
+    "/",
+    "/health",
+    "/docs",
+    "/redoc",
+    "/openapi.json",
+    "/api/auth/signin",
+    "/api/auth/signup",
+    "/api/auth/logout",
+]
+
+
+def is_public_path(path: str) -> bool:
+    """Check if the path is public (doesn't require auth)"""
+    # Exact match
+    if path in PUBLIC_PATHS:
+        return True
+    # Prefix match for docs
+    if path.startswith("/docs") or path.startswith("/redoc"):
+        return True
+    return False
+
+
 async def auth_middleware(request: Request, call_next):
     """
     Middleware to extract and validate user_id from Authorization header
@@ -46,6 +78,14 @@ async def auth_middleware(request: Request, call_next):
     request.state.user_id = None
     request.state.request_id = getattr(request.state, "request_id", "unknown")
 
+    # Skip auth for OPTIONS requests (CORS preflight)
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
+    # Skip auth for public paths
+    if is_public_path(request.url.path):
+        return await call_next(request)
+
     # Get Authorization header
     auth_header = request.headers.get("Authorization", "").strip()
 
@@ -56,7 +96,7 @@ async def auth_middleware(request: Request, call_next):
             method=request.method,
             request_id=request.state.request_id,
         )
-        raise create_unauthorized_response()
+        return create_unauthorized_response()
 
     # Parse Bearer token
     parts = auth_header.split()
@@ -68,15 +108,33 @@ async def auth_middleware(request: Request, call_next):
             auth_header_format=auth_header[:20] if auth_header else None,
             request_id=request.state.request_id,
         )
-        raise create_unauthorized_response()
+        return create_unauthorized_response()
 
     token = parts[1]
 
-    # Extract user_id from token
-    # In development: token could be directly the user_id
-    # In production: decode JWT/session token to get user_id
-    # For now, treat token as user_id (can be enhanced with JWT decoding)
-    user_id = token
+    # Decode JWT token to extract user_id
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+
+        if not user_id:
+            logger.warning(
+                "Missing user_id in token",
+                path=request.url.path,
+                method=request.method,
+                request_id=request.state.request_id,
+            )
+            return create_unauthorized_response()
+
+    except JWTError as e:
+        logger.warning(
+            "Invalid JWT token",
+            error=str(e),
+            path=request.url.path,
+            method=request.method,
+            request_id=request.state.request_id,
+        )
+        return create_unauthorized_response()
 
     # Validate user_id
     if not validate_user_id(user_id):
@@ -87,7 +145,7 @@ async def auth_middleware(request: Request, call_next):
             method=request.method,
             request_id=request.state.request_id,
         )
-        raise create_unauthorized_response()
+        return create_unauthorized_response()
 
     # Attach user_id to request state
     request.state.user_id = user_id
@@ -106,13 +164,12 @@ async def auth_middleware(request: Request, call_next):
 
 def create_unauthorized_response():
     """Create 401 Unauthorized JSON response
-    
-    Raises HTTPException instead of returning it, so that FastAPI's exception
-    handler can properly format the response with correct headers.
+
+    Returns JSONResponse so it works properly in middleware context.
     """
-    raise HTTPException(
+    return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Unauthorized",
+        content={"detail": "Unauthorized"},
         headers={"WWW-Authenticate": "Bearer"},
     )
 

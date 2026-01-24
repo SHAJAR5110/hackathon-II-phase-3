@@ -7,7 +7,30 @@
       "Skill(sp.implement)",
       "Skill(sp.implement:*)",
       "Skill(fullstack-developer)",
-      "Skill(fullstack-developer:*)"
+      "Skill(fullstack-developer:*)",
+      "Bash(uv pip compile:*)",
+      "Bash(python -m pip:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(while read file)",
+      "Bash(do python -m py_compile:*)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(uv pip install:*)",
+      "Bash(uv venv:*)",
+      "Bash(. .venv/Scripts/activate)",
+      "Bash(python:*)",
+      "Bash(.venvScriptspython -m pip install -r requirements.txt)",
+      "Bash(./.venv/Scripts/python:*)",
+      "Bash(uv pip:*)",
+      "Bash(uv run python:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(.specifyscriptsbashcheck-prerequisites.sh --json --require-tasks --include-tasks)",
+      "Bash(pip --version:*)",
+      "Bash(pip install:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)"
     ]
   }
 }
