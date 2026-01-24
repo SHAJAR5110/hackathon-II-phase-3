@@ -46,7 +46,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem("auth-token");
+        // Try to get token from localStorage first
+        let token = localStorage.getItem("auth-token");
+
+        // If not in localStorage, try to get from cookie (restore session)
+        if (!token) {
+          // Parse cookie from document.cookie
+          const name = "auth-token=";
+          const decodedCookie = decodeURIComponent(document.cookie);
+          const cookieArray = decodedCookie.split(";");
+
+          for (let cookie of cookieArray) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name)) {
+              token = cookie.substring(name.length);
+              // Restore token to localStorage
+              if (token && isMounted) {
+                localStorage.setItem("auth-token", token);
+              }
+              break;
+            }
+          }
+        }
+
         if (token && isMounted) {
           // Try to fetch user data to verify token is valid
           const response = await fetch(`${API_URL}/api/users/me`, {
