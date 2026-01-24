@@ -80,15 +80,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (response.ok && isMounted) {
             const userData = await response.json();
             setUser(userData);
+            // Set loading to false AFTER setting user
+            setIsLoading(false);
           } else if (isMounted) {
             // Token is invalid, clear it
             localStorage.removeItem("auth-token");
             clearAuthCookie();
+            // Set loading to false when token validation fails
+            setIsLoading(false);
           }
+        } else if (isMounted) {
+          // No token found at all, auth check complete
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Failed to check auth status:", error);
-      } finally {
         if (isMounted) {
           setIsLoading(false);
         }
