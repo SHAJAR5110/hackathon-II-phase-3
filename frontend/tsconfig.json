@@ -1,49 +1,26 @@
 {
   "compilerOptions": {
-    /* Language and Environment */
-    "target": "ES2020",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
-    /* Modules */
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
-    /* Type Checking - STRICT MODE ENABLED */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    /* Emit */
-    "noEmit": true,
-    "incremental": true,
-    "sourceMap": true,
-    /* Interop Constraints */
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    /* Skip Lib Check */
-    "skipLibCheck": true,
-    /* Next.js Specific */
+    "jsx": "react-jsx",
+    "incremental": true,
     "plugins": [
       {
-        "name": "next",
-      },
+        "name": "next"
+      }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/styles/*": ["./src/styles/*"],
-      "@/app/*": ["./src/app/*"],
-    },
-    "allowJs": true,
+      "@/*": ["./*"]
+    }
   },
   "include": [
     "next-env.d.ts",
@@ -51,15 +28,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
+    "**/*.mts"
   ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    "out",
-    "__tests__",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
-  ],
+  "exclude": ["node_modules"]
 }
