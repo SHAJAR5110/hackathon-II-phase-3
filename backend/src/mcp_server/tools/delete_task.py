@@ -104,27 +104,55 @@ def delete_task(
         task_title = task.title
         task_id_val = task.id
 
-        # Delete task
-        success = TaskRepository.delete(db, user_id, task_id)
+        # Delete task using raw database operation to ensure proper transaction
+        try:
+            # Use SQLAlchemy delete directly for better control
+            from sqlalchemy import delete as sql_delete
+            from ...models import Task as TaskModel
 
-        if not success:
-            logger.warning(
-                "delete_task_failed_to_delete", user_id=user_id, task_id=task_id
+            # Execute delete statement
+            delete_stmt = sql_delete(TaskModel).where(
+                (TaskModel.id == task_id) & (TaskModel.user_id == user_id)
+            )
+            result = db.execute(delete_stmt)
+
+            # Flush and commit to ensure immediate persistence
+            db.flush()
+            db.commit()
+
+            # Verify deletion by checking if rows were affected
+            if result.rowcount == 0:
+                logger.warning(
+                    "delete_task_failed_to_delete", user_id=user_id, task_id=task_id
+                )
+                return {
+                    "error": "task_deletion_failed",
+                    "message": f"Failed to delete task",
+                }
+
+            logger.info(
+                "delete_task_success",
+                user_id=user_id,
+                task_id=task_id,
+                title=task_title,
+                by="id" if task_id else "name",
+                rows_affected=result.rowcount
+            )
+
+            return {"task_id": task_id_val, "status": "deleted", "title": task_title}
+
+        except Exception as delete_error:
+            db.rollback()
+            logger.error(
+                "delete_task_sql_failed",
+                user_id=user_id,
+                task_id=task_id,
+                error=str(delete_error)
             )
             return {
                 "error": "task_deletion_failed",
-                "message": f"Failed to delete task",
+                "message": f"Failed to delete task"
             }
-
-        logger.info(
-            "delete_task_success",
-            user_id=user_id,
-            task_id=task_id,
-            title=task_title,
-            by="id" if task_id else "name"
-        )
-
-        return {"task_id": task_id_val, "status": "deleted", "title": task_title}
 
     except Exception as e:
         logger.error(

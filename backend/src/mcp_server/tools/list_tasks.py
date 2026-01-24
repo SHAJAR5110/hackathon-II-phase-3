@@ -63,10 +63,13 @@ def list_tasks(
 
     db: Session = SessionLocal()
     try:
+        # Ensure fresh session by expiring all objects
+        db.expunge_all()
+
         # Fetch tasks from database (filtering done at SQL level)
         tasks = TaskRepository.list_by_user(db, user_id, status=status)
 
-        # Format response
+        # Format response (convert to dict before closing session)
         task_list = [
             {
                 "id": task.id,
@@ -89,4 +92,5 @@ def list_tasks(
         return {"error": "task_retrieval_failed", "message": "Failed to retrieve tasks"}
 
     finally:
+        db.expunge_all()
         db.close()

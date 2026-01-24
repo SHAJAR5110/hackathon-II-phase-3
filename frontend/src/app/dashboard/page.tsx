@@ -43,6 +43,10 @@ function DashboardContent() {
       const newTask = await api.createTask(data);
       setTasks((prev) => [newTask, ...prev]); // Add to beginning
       showSuccess("Task created successfully!");
+      // Refresh to ensure sync with server
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
     } catch (err: unknown) {
       throw new Error(
         err instanceof Error ? err.message : "Failed to create task",
@@ -59,6 +63,10 @@ function DashboardContent() {
       });
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
       showSuccess("Task updated successfully!");
+      // Refresh to ensure sync with server
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
     } catch (err: unknown) {
       throw new Error(
         err instanceof Error ? err.message : "Failed to update task",
@@ -71,12 +79,20 @@ function DashboardContent() {
     try {
       const updated = await api.toggleTaskComplete(taskId);
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+      // Refresh to ensure sync with server
+      setTimeout(() => {
+        fetchTasks();
+      }, 300);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError("Failed to toggle task");
       }
+      // Refresh to show actual state if toggle failed
+      setTimeout(() => {
+        fetchTasks();
+      }, 300);
     }
   };
 
@@ -84,14 +100,23 @@ function DashboardContent() {
   const handleDeleteTask = async (taskId: number) => {
     try {
       await api.deleteTask(taskId);
+      // Optimistically remove from UI
       setTasks((prev) => prev.filter((t) => t.id !== taskId));
       showSuccess("Task deleted successfully!");
+      // Refresh tasks from server after a short delay to ensure deletion is persisted
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError("Failed to delete task");
       }
+      // Refresh to show actual state if deletion failed
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
     }
   };
 
