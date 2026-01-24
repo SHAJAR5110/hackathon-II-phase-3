@@ -79,13 +79,24 @@ class UserResponse(BaseModel):
 
 
 def hash_password(password: str) -> str:
-    """Hash a password using bcrypt"""
-    return pwd_context.hash(password)
+    """Hash a password using bcrypt
+
+    Bcrypt has a 72-byte limit, so we truncate passwords to 72 bytes
+    to prevent "password too long" errors while maintaining security
+    """
+    # Truncate to 72 bytes (bcrypt limit)
+    truncated = password.encode()[:72].decode('utf-8', errors='ignore')
+    return pwd_context.hash(truncated)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a password against its hash
+
+    Must truncate to same 72-byte limit as hash_password for consistency
+    """
+    # Truncate to 72 bytes (same as hash_password)
+    truncated = plain_password.encode()[:72].decode('utf-8', errors='ignore')
+    return pwd_context.verify(truncated, hashed_password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
