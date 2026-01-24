@@ -142,6 +142,35 @@ async def chat_endpoint(
                     detail="Failed to retrieve or create conversation",
                 )
 
+            # Step 2.5: Validate message scope (reject non-task queries)
+            scope_check = _check_message_scope(chat_request.message, request_id)
+            if not scope_check["valid"]:
+                logger.info(
+                    "message_out_of_scope",
+                    user_id=user_id,
+                    reason=scope_check["reason"],
+                    request_id=request_id,
+                )
+                # Store the user message
+                await _store_user_message(
+                    db, user_id, conversation_id, chat_request.message, request_id
+                )
+                # Store and return rejection response
+                rejection_response = scope_check["message"]
+                await _store_assistant_response(
+                    db,
+                    user_id,
+                    conversation_id,
+                    rejection_response,
+                    [],
+                    request_id,
+                )
+                return await _format_response(
+                    conversation_id,
+                    rejection_response,
+                    []
+                )
+
             # Step 3: Store user message
             await _store_user_message(
                 db, user_id, conversation_id, chat_request.message, request_id
@@ -531,6 +560,89 @@ async def _format_response(
         response=response_text,
         tool_calls=formatted_tool_calls,
     )
+
+
+def _check_message_scope(message: str, request_id: str) -> Dict[str, Any]:
+    """
+    Check if user message is task-related or out of scope.
+    Rejects general knowledge questions, trivia, and non-task requests.
+
+    Parameters:
+        message (str): User message to check
+        request_id (str): Request ID for logging
+
+    Returns:
+        {
+            "valid": bool,
+            "reason": str (if invalid),
+            "message": str (rejection message if invalid)
+        }
+    """
+    message_lower = message.lower().strip()
+
+    # Task-related keywords that are always allowed
+    task_keywords = [
+        "task", "todo", "create", "add", "delete", "remove", "update",
+        "mark", "complete", "done", "finish", "pending", "show", "list",
+        "my tasks", "all tasks", "update task", "change task", "rename",
+        "due", "deadline", "priority"
+    ]
+
+    # Check if message contains task-related keywords
+    is_task_related = any(keyword in message_lower for keyword in task_keywords)
+
+    # Out-of-scope keywords (general knowledge, people, places, etc.)
+    out_of_scope_keywords = [
+        "who is", "what is", "how to", "explain", "tell me about",
+        "when was", "where is", "why is", "calculate", "math",
+        "weather", "news", "sports", "movie", "music", "celebrity",
+        "president", "country", "city", "history", "science",
+        "philosophy", "politics", "help with", "teach me"
+    ]
+
+    # Check for out-of-scope patterns
+    for keyword in out_of_scope_keywords:
+        if message_lower.startswith(keyword):
+            logger.info(
+                "out_of_scope_question_detected",
+                pattern=keyword,
+                request_id=request_id,
+            )
+            return {
+                "valid": False,
+                "reason": "general_knowledge_question",
+                "message": "I only help with task management. Please ask me about creating, updating, listing, or deleting your tasks."
+            }
+
+    # If not explicitly task-related and not explicitly rejected, be cautious
+    # Allow short messages and questions that could be ambiguous
+    if len(message_lower) < 5:  # Very short messages get the benefit of doubt
+        return {"valid": True}
+
+    # Check for obvious non-task messages
+    non_task_starters = [
+        "who", "what", "when", "where", "why", "how many", "how much",
+        "is", "are", "was", "were", "can you", "could you", "would you",
+        "tell me", "explain", "describe", "summarize"
+    ]
+
+    message_start = message_lower.split()[0] if message_lower.split() else ""
+
+    # If starts with question word and no task keywords, likely out of scope
+    if message_start in non_task_starters and not is_task_related:
+        logger.info(
+            "ambiguous_query_rejected",
+            message_start=message_start,
+            request_id=request_id,
+        )
+        return {
+            "valid": False,
+            "reason": "non_task_question",
+            "message": "I only help with task management. Please ask me about creating, updating, listing, or deleting your tasks."
+        }
+
+    # Message seems task-related or ambiguous in a good way
+    return {"valid": True}
 
 
 # Export router
