@@ -71,23 +71,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (token && isMounted) {
           // Try to fetch user data to verify token is valid
-          const response = await fetch(`${API_URL}/api/users/me`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-          if (response.ok && isMounted) {
-            const userData = await response.json();
-            setUser(userData);
-            // Set loading to false AFTER setting user
-            setIsLoading(false);
-          } else if (isMounted) {
-            // Token is invalid, clear it
-            localStorage.removeItem("auth-token");
-            clearAuthCookie();
-            // Set loading to false when token validation fails
-            setIsLoading(false);
+          try {
+            const response = await fetch(`${API_URL}/api/users/me`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+
+            if (response.ok && isMounted) {
+              const userData = await response.json();
+              setUser(userData);
+              // Set loading to false AFTER setting user
+              setIsLoading(false);
+            } else if (isMounted) {
+              // Token is invalid, clear it
+              localStorage.removeItem("auth-token");
+              clearAuthCookie();
+              // Set loading to false when token validation fails
+              setIsLoading(false);
+            }
+          } catch (fetchError) {
+            clearTimeout(timeoutId);
+            if (isMounted) {
+              // API is unavailable, proceed without user
+              console.warn("Auth API unavailable, proceeding as guest");
+              setIsLoading(false);
+            }
           }
         } else if (isMounted) {
           // No token found at all, auth check complete
