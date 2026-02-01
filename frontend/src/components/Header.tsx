@@ -2,29 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Menu, X, LogOut, User } from 'lucide-react';
-import { useAuth } from '@/lib/use-auth';
+import { Menu, X } from 'lucide-react';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
-  const router = useRouter();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/');
-      setIsMenuOpen(false);
-      setIsProfileOpen(false);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -53,59 +36,18 @@ export default function Header() {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-4">
-            {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={toggleProfile}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                  aria-label="User menu"
-                  aria-expanded={isProfileOpen}
-                  aria-haspopup="true"
-                >
-                  <User className="w-5 h-5" />
-                  <span className="text-sm font-medium">{user?.name || 'User'}</span>
-                </button>
-
-                {/* Profile Dropdown */}
-                {isProfileOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200"
-                    role="menu"
-                  >
-                    <Link
-                      href="/dashboard"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg transition"
-                      role="menuitem"
-                    >
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg transition flex items-center gap-2"
-                      role="menuitem"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <>
-                <Link
-                  href="/auth/signin"
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-                >
-                  Sign Up
-                </Link>
-              </>
-            )}
+            <Link
+              href="/auth/signin"
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+            >
+              Sign Up
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -148,38 +90,18 @@ export default function Header() {
               </Link>
 
               <div className="border-t border-gray-200 my-2 pt-2">
-                {isAuthenticated ? (
-                  <>
-                    <Link
-                      href="/dashboard"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
-                    >
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/auth/signin"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/auth/signup"
-                      className="block px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-                    >
-                      Sign Up
-                    </Link>
-                  </>
-                )}
+                <Link
+                  href="/auth/signin"
+                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="block px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+                >
+                  Sign Up
+                </Link>
               </div>
             </div>
           </div>
