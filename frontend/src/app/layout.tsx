@@ -15,11 +15,8 @@ import Providers from "./providers";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Todo App - Phase II",
+  title: "TaskMaster - Todo App",
   description: "Full-stack todo application with Next.js and FastAPI",
-  icons: {
-    icon: "/favicon.svg",
-  },
 };
 
 export const viewport: Viewport = {
