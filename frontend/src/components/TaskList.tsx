@@ -33,9 +33,9 @@ export default function TaskList({
   // Loading state
   if (isLoading && tasks.length === 0) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="card animate-pulse">
+          <div key={i} className="border-2 border-gray-200 rounded-lg p-4 animate-pulse">
             <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
           </div>
@@ -45,7 +45,7 @@ export default function TaskList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {tasks.map((task) => (
         <TaskItem
           key={task.id}

@@ -76,7 +76,7 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleComplete }:
   // Edit mode
   if (isEditing) {
     return (
-      <div className="card bg-blue-50 border-blue-200">
+      <div className="border-2 border-blue-400 rounded-lg p-4 bg-blue-50">
         <TaskForm
           onSubmit={handleEdit}
           initialValues={{ title: task.title, description: task.description || '' }}
@@ -92,8 +92,10 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleComplete }:
   return (
     <>
       <div
-        className={`card transition-all duration-200 ${
-          task.completed ? 'bg-gray-50 border-gray-200' : 'bg-white hover:shadow-md'
+        className={`border-2 rounded-lg p-4 transition-all duration-200 ${
+          task.completed
+            ? 'bg-gray-50 border-gray-200'
+            : 'bg-white border-gray-300 hover:border-blue-400 hover:shadow-md'
         }`}
       >
         <div className="flex items-start gap-3">
@@ -116,23 +118,25 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleComplete }:
 
           {/* Task Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3
-                className={`font-medium text-gray-900 ${
-                  task.completed ? 'line-through text-gray-500' : ''
-                }`}
-              >
-                {task.title}
-              </h3>
-              <span className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+            <div className="flex items-start gap-3 mb-2">
+              <div className="flex-1">
+                <h3
+                  className={`font-bold text-lg text-gray-900 mb-1 ${
+                    task.completed ? 'line-through text-gray-500' : ''
+                  }`}
+                >
+                  {task.title}
+                </h3>
+                {task.description && (
+                  <p className={`text-sm text-gray-600 leading-relaxed ${task.completed ? 'line-through' : ''}`}>
+                    {task.description}
+                  </p>
+                )}
+              </div>
+              <span className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium flex-shrink-0">
                 ID: {task.id}
               </span>
             </div>
-            {task.description && (
-              <p className={`text-sm text-gray-600 mb-2 ${task.completed ? 'line-through' : ''}`}>
-                {task.description}
-              </p>
-            )}
             <div className="flex items-center gap-4 text-xs text-gray-500">
               <span>Created {formatDate(task.created_at)}</span>
               {task.updated_at !== task.created_at && (

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { Task, TaskCreateRequest, api } from "@/lib/api";
-import TaskForm from "@/components/TaskForm";
-import TaskList from "@/components/TaskList";
-import Header from "@/components/Header";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import ChatBotPopup from "@/components/ChatBotPopup";
-import { AlertCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from 'react';
+import { Task, TaskCreateRequest, api } from '@/lib/api';
+import TaskForm from '@/components/TaskForm';
+import TaskList from '@/components/TaskList';
+import Header from '@/components/Header';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import ChatBotPopup from '@/components/ChatBotPopup';
+import { AlertCircle } from 'lucide-react';
 
 function DashboardContent() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -20,14 +20,13 @@ function DashboardContent() {
     try {
       setError(null);
       const data = await api.getTasks();
-      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+      setTasks(data.tasks);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Failed to load tasks");
+        setError('Failed to load tasks');
       }
-      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -42,14 +41,15 @@ function DashboardContent() {
     try {
       const newTask = await api.createTask(data);
       setTasks((prev) => [newTask, ...prev]); // Add to beginning
-      showSuccess("Task created successfully!");
-      // Refresh to ensure sync with server
+      showSuccess('Task created successfully!');
+
+      // Refresh tasks after 1 second to ensure sync with backend
       setTimeout(() => {
         fetchTasks();
-      }, 500);
+      }, 1000);
     } catch (err: unknown) {
       throw new Error(
-        err instanceof Error ? err.message : "Failed to create task",
+        err instanceof Error ? err.message : 'Failed to create task'
       );
     }
   };
@@ -62,14 +62,15 @@ function DashboardContent() {
         description: updatedTask.description,
       });
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-      showSuccess("Task updated successfully!");
-      // Refresh to ensure sync with server
+      showSuccess('Task updated successfully!');
+
+      // Refresh tasks after 1 second to ensure sync with backend
       setTimeout(() => {
         fetchTasks();
-      }, 500);
+      }, 1000);
     } catch (err: unknown) {
       throw new Error(
-        err instanceof Error ? err.message : "Failed to update task",
+        err instanceof Error ? err.message : 'Failed to update task'
       );
     }
   };
@@ -79,20 +80,12 @@ function DashboardContent() {
     try {
       const updated = await api.toggleTaskComplete(taskId);
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-      // Refresh to ensure sync with server
-      setTimeout(() => {
-        fetchTasks();
-      }, 300);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Failed to toggle task");
+        setError('Failed to toggle task');
       }
-      // Refresh to show actual state if toggle failed
-      setTimeout(() => {
-        fetchTasks();
-      }, 300);
     }
   };
 
@@ -100,23 +93,19 @@ function DashboardContent() {
   const handleDeleteTask = async (taskId: number) => {
     try {
       await api.deleteTask(taskId);
-      // Optimistically remove from UI
       setTasks((prev) => prev.filter((t) => t.id !== taskId));
-      showSuccess("Task deleted successfully!");
-      // Refresh tasks from server after a short delay to ensure deletion is persisted
+      showSuccess('Task deleted successfully!');
+
+      // Refresh tasks after 1 second to ensure sync with backend
       setTimeout(() => {
         fetchTasks();
-      }, 500);
+      }, 1000);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Failed to delete task");
+        setError('Failed to delete task');
       }
-      // Refresh to show actual state if deletion failed
-      setTimeout(() => {
-        fetchTasks();
-      }, 500);
     }
   };
 
@@ -159,9 +148,7 @@ function DashboardContent() {
           {/* Left Column: Task Form */}
           <div className="lg:col-span-1">
             <div className="card sticky top-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Create New Task
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Task</h2>
               <TaskForm onSubmit={handleCreateTask} />
             </div>
           </div>
@@ -170,17 +157,15 @@ function DashboardContent() {
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
-                My Tasks{" "}
-                <span className="text-lg font-normal text-gray-500">
-                  ({tasks.length})
-                </span>
+                My Tasks{' '}
+                <span className="text-lg font-normal text-gray-500">({tasks.length})</span>
               </h2>
               <button
                 onClick={fetchTasks}
                 disabled={loading}
                 className="text-sm text-primary-600 hover:text-primary-700 font-medium"
               >
-                {loading ? "Refreshing..." : "Refresh"}
+                {loading ? 'Refreshing...' : 'Refresh'}
               </button>
             </div>
 

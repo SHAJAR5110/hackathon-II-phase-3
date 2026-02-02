@@ -2,12 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Menu, X, LogOut } from 'lucide-react';
+import { useAuth } from '@/lib/use-auth';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, logout, isLoading } = useAuth();
+  const router = useRouter();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -36,18 +45,40 @@ export default function Header() {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <Link
-              href="/auth/signin"
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-            >
-              Sign Up
-            </Link>
+            {isLoading ? (
+              <div className="px-4 py-2 text-gray-500">Loading...</div>
+            ) : isAuthenticated ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-gray-700 hover:bg-red-50 rounded-lg font-medium transition flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/signin"
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -90,18 +121,39 @@ export default function Header() {
               </Link>
 
               <div className="border-t border-gray-200 my-2 pt-2">
-                <Link
-                  href="/auth/signin"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="block px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-                >
-                  Sign Up
-                </Link>
+                {isLoading ? (
+                  <div className="px-4 py-2 text-gray-500">Loading...</div>
+                ) : isAuthenticated ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-red-50 rounded-lg font-medium transition"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/signin"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      className="block px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
