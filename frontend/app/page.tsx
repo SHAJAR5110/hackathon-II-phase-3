@@ -70,7 +70,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 sm:mb-24">
             <Link
               href="/auth/signup"
-              className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition duration-200 gap-2 group"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white/30 text-white font-semibold rounded-lg hover:bg-white/40 backdrop-blur-md border border-blue-500 transition duration-200 gap-2 group"
             >
               Get Started Free
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
@@ -184,7 +184,7 @@ export default function Home() {
           </p>
           <Link
             href="/auth/signup"
-            className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition duration-200 gap-2 group"
+            className="inline-flex items-center justify-center px-8 py-4 bg-white/30 text-white font-semibold rounded-lg hover:bg-white/40 backdrop-blur-md border border-blue-500 transition duration-200 gap-2 group"
           >
             Get Started Free
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
