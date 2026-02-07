@@ -1,5 +1,5 @@
 ---
-title: Todo Backend API
+title: Phase III
 emoji: 🚀
 colorFrom: blue
 colorTo: purple
@@ -111,7 +111,7 @@ Requires PostgreSQL. Free tier options:
 
 Once deployed, your API is available at:
 ```
-https://abbasshajar-todo-backend.hf.space
+https://huggingface.co/spaces/abbasshajar/phaseIII
 ```
 
-**Interactive API Docs**: https://abbasshajar-todo-backend.hf.space/docs
+**Interactive API Docs**: Visit the space URL and navigate to `/docs`

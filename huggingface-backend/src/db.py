@@ -143,7 +143,7 @@ async def init_db() -> None:
     Note: For production, use proper migration tools like Alembic instead of
     creating tables directly. This is for MVP development only.
     """
-    from .models import User, Task  # Import models to register them
+    from .models import User, Task, Conversation, Message  # Import models to register them
 
     # Log database type
     if DATABASE_URL.startswith("postgresql+asyncpg://"):

@@ -261,9 +261,9 @@ export const api = {
     const query = params.toString();
     const endpoint = query ? `/api/tasks?${query}` : "/api/tasks";
 
-    // Backend returns direct array, wrap it in expected format
-    const tasks = await api.get<Task[]>(endpoint);
-    return { tasks: Array.isArray(tasks) ? tasks : [] };
+    // Backend returns { tasks: [...] } (TaskListResponse)
+    const response = await api.get<TaskListResponse>(endpoint);
+    return { tasks: Array.isArray(response.tasks) ? response.tasks : [] };
   },
 
   /**

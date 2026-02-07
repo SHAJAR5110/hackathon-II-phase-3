@@ -18,6 +18,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class User(SQLModel, table=True):
     """User model - authenticated user"""
+    __tablename__ = "users"
 
     id: str = Field(primary_key=True, index=True, max_length=255)
     email: str = Field(unique=True, index=True, max_length=255)
@@ -39,9 +40,10 @@ class User(SQLModel, table=True):
 
 class Task(SQLModel, table=True):
     """Task model - todo item"""
+    __tablename__ = "tasks"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: str = Field(foreign_key="user.id", index=True)
+    user_id: str = Field(foreign_key="users.id", index=True)
     title: str = Field(max_length=1000, index=True)
     description: Optional[str] = Field(default=None, max_length=1000)
     completed: bool = Field(default=False, index=True)
@@ -59,9 +61,10 @@ class Task(SQLModel, table=True):
 
 class Conversation(SQLModel, table=True):
     """Conversation model - chat session"""
+    __tablename__ = "conversations"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: str = Field(foreign_key="user.id", index=True)
+    user_id: str = Field(foreign_key="users.id", index=True)
     created_at: datetime = Field(
         default_factory=datetime.utcnow,
         sa_column=Column(DateTime, server_default=func.now()),
@@ -79,10 +82,11 @@ class Conversation(SQLModel, table=True):
 
 class Message(SQLModel, table=True):
     """Message model - individual message in conversation"""
+    __tablename__ = "messages"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: str = Field(foreign_key="user.id", index=True)
-    conversation_id: int = Field(foreign_key="conversation.id", index=True)
+    user_id: str = Field(foreign_key="users.id", index=True)
+    conversation_id: int = Field(foreign_key="conversations.id", index=True)
     role: str = Field(max_length=20, index=True)  # "user" or "assistant"
     content: str = Field()  # Message text
     created_at: datetime = Field(
