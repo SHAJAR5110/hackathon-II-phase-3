@@ -28,4 +28,4 @@ EXPOSE 7860
 
 # Start FastAPI application
 # Must listen on 0.0.0.0:7860 as required by Hugging Face Docker Spaces
-CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "7860"]
