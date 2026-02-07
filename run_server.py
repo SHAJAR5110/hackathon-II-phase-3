@@ -8,7 +8,11 @@ import sys
 import subprocess
 
 if __name__ == "__main__":
-    os.chdir("C:\\Users\\HP\\Desktop\\H\\GIAIC\\phase 3")
+    # Change to the huggingface-backend directory so imports work
+    os.chdir("C:\\Users\\HP\\Desktop\\H\\GIAIC\\phase 3\\huggingface-backend")
+
+    # Add to Python path so src can be imported
+    sys.path.insert(0, os.getcwd())
 
     # Run uvicorn
     subprocess.run(
@@ -16,7 +20,7 @@ if __name__ == "__main__":
             sys.executable,
             "-m",
             "uvicorn",
-            "backend.src.main:app",
+            "src.main:app",
             "--host", "0.0.0.0",
             "--port", "8000",
             "--reload",

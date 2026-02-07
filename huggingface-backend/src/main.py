@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .logging_config import get_logger, setup_logging
-from .middleware.auth import auth_middleware
+# from .middleware.auth import auth_middleware  # Not needed - auth is handled per-route
 from .middleware.errors import error_handling_middleware
 from .middleware.logging_middleware import logging_middleware
 from .routes import chat_router, tasks_router, users_router
@@ -73,12 +73,11 @@ app.add_middleware(
 
 # Register middleware in order (LIFO - registered last executes first):
 # Note: FastAPI middleware stack is LIFO, so innermost (first to execute) is registered last
-# Execution order: logging_middleware → auth_middleware → error_handling_middleware
+# Execution order: logging_middleware → error_handling_middleware
 # 1. logging_middleware: Generate request_id and log incoming requests
-# 2. auth_middleware: Extract and validate user_id from Authorization header
-# 3. error_handling_middleware: Catch all exceptions and format responses
+# 2. error_handling_middleware: Catch all exceptions and format responses
+# Auth is handled per-route using Depends(get_current_user_id)
 app.middleware("http")(error_handling_middleware)
-app.middleware("http")(auth_middleware)
 app.middleware("http")(logging_middleware)
 
 # Include routers

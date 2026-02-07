@@ -5,12 +5,13 @@ Phase II - Todo Full-Stack Web Application
 Manages Neon PostgreSQL connection, async session factory, and database initialization.
 """
 
-from sqlmodel import SQLModel, create_engine
+from sqlmodel import SQLModel, create_engine as create_sync_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
-from typing import AsyncGenerator
+from sqlmodel import Session
+from typing import AsyncGenerator, Generator
 import os
 from dotenv import load_dotenv
 
@@ -80,6 +81,30 @@ async_session_maker = sessionmaker(
     autoflush=False,
 )
 
+# Synchronous engine and session for agent context (non-async code paths)
+SYNC_DATABASE_URL = os.getenv("DATABASE_URL", "")
+if SYNC_DATABASE_URL.startswith("postgresql://"):
+    _sync_url = SYNC_DATABASE_URL.split("?")[0]  # Remove query params for psycopg2
+    _sync_url = _sync_url + "?sslmode=require"
+elif SYNC_DATABASE_URL.startswith("sqlite+aiosqlite"):
+    _sync_url = SYNC_DATABASE_URL.replace("sqlite+aiosqlite", "sqlite")
+else:
+    _sync_url = SYNC_DATABASE_URL
+
+sync_engine = create_sync_engine(
+    _sync_url,
+    echo=False,
+    pool_pre_ping=True,
+)
+
+SessionLocal = sessionmaker(
+    bind=sync_engine,
+    class_=Session,
+    autocommit=False,
+    autoflush=False,
+    expire_on_commit=False,
+)
+
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -118,7 +143,7 @@ async def init_db() -> None:
     Note: For production, use proper migration tools like Alembic instead of
     creating tables directly. This is for MVP development only.
     """
-    from models import User, Task  # Import models to register them
+    from .models import User, Task  # Import models to register them
 
     # Log database type
     if DATABASE_URL.startswith("postgresql+asyncpg://"):

@@ -205,3 +205,7 @@ def create_test_token(user_id: str, expiration_days: int = 7) -> str:
     }
 
     return jwt.encode(payload, BETTER_AUTH_SECRET, algorithm=JWT_ALGORITHM)
+
+
+# Alias for compatibility with chat routes
+get_current_user = get_current_user_id
