@@ -33,14 +33,14 @@ class UserRepository:
         """
         try:
             # Try to get existing user
-            user = db.query(User).filter(User.user_id == user_id).first()
+            user = db.query(User).filter(User.id == user_id).first()
             
             if user:
                 logger.debug("existing_user_found", user_id=user_id)
                 return user
             
             # Create new user if not found
-            user = User(user_id=user_id)
+            user = User(id=user_id, email=f"{user_id}@placeholder.com", name="Anonymous", password_hash="placeholder")
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -55,7 +55,7 @@ class UserRepository:
     @staticmethod
     def read(db: Session, user_id: str) -> Optional[User]:
         """Read a user by ID"""
-        return db.query(User).filter(User.user_id == user_id).first()
+        return db.query(User).filter(User.id == user_id).first()
 
 
 class TaskRepository:
