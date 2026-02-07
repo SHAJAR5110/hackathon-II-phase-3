@@ -42,11 +42,6 @@ function DashboardContent() {
       const newTask = await api.createTask(data);
       setTasks((prev) => [newTask, ...prev]); // Add to beginning
       showSuccess('Task created successfully!');
-
-      // Refresh tasks after 1 second to ensure sync with backend
-      setTimeout(() => {
-        fetchTasks();
-      }, 1000);
     } catch (err: unknown) {
       throw new Error(
         err instanceof Error ? err.message : 'Failed to create task'
@@ -63,11 +58,6 @@ function DashboardContent() {
       });
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
       showSuccess('Task updated successfully!');
-
-      // Refresh tasks after 1 second to ensure sync with backend
-      setTimeout(() => {
-        fetchTasks();
-      }, 1000);
     } catch (err: unknown) {
       throw new Error(
         err instanceof Error ? err.message : 'Failed to update task'
@@ -95,11 +85,6 @@ function DashboardContent() {
       await api.deleteTask(taskId);
       setTasks((prev) => prev.filter((t) => t.id !== taskId));
       showSuccess('Task deleted successfully!');
-
-      // Refresh tasks after 1 second to ensure sync with backend
-      setTimeout(() => {
-        fetchTasks();
-      }, 1000);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
