@@ -15,7 +15,7 @@ import os
 import uuid
 from dotenv import load_dotenv
 
-from models import User, SignupRequest, SigninRequest, UserResponse, AuthResponse
+from ..models import User, SignupRequest, SigninRequest, UserResponse, AuthResponse
 
 # Load environment variables
 load_dotenv()

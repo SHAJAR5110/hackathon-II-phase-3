@@ -8,9 +8,9 @@ Handles user signup, signin, and logout endpoints.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from db import get_session
-from models import SignupRequest, SigninRequest, AuthResponse, ErrorResponse
-from services.auth_service import AuthService
+from ..db import get_session
+from ..models import SignupRequest, SigninRequest, AuthResponse, ErrorResponse
+from ..services.auth_service import AuthService
 
 # Create router for authentication endpoints
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])

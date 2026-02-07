@@ -124,9 +124,9 @@ async def root():
 
 
 # Register routes
-from routes.tasks import router as tasks_router
-from routes.auth import router as auth_router
-from routes.users import router as users_router
+from .routes.tasks import router as tasks_router
+from .routes.auth import router as auth_router
+from .routes.users import router as users_router
 
 app.include_router(tasks_router)
 app.include_router(auth_router)
@@ -140,7 +140,7 @@ async def startup_event():
     Initialize database tables on application startup.
     Creates tables if they don't exist.
     """
-    from db import init_db
+    from .db import init_db
 
     print("[STARTUP] Starting Todo API...")
     await init_db()
@@ -152,7 +152,7 @@ async def shutdown_event():
     """
     Close database connections on application shutdown.
     """
-    from db import close_db
+    from .db import close_db
 
     print("[SHUTDOWN] Shutting down Todo API...")
     await close_db()

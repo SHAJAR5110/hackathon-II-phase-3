@@ -8,11 +8,11 @@ Implements user profile endpoints.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from db import get_session
-from middleware.auth import get_current_user_id
-from models import UserResponse
+from ..db import get_session
+from ..middleware.auth import get_current_user_id
+from ..models import UserResponse
 from sqlmodel import select
-from models import User
+from ..models import User
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
