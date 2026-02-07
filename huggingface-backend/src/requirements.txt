@@ -28,6 +28,15 @@ pytest>=7.0.0
 pytest-asyncio>=0.21.0
 httpx>=0.24.0
 
+# AI / LLM
+groq>=0.11.0
+
+# MCP (Model Context Protocol)
+mcp>=1.0.0
+
+# Logging
+structlog>=23.0.0
+
 # Development Tools
 black>=23.0.0
 flake8>=6.0.0

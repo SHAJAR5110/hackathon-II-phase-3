@@ -2,7 +2,7 @@
 # Based on Hugging Face Docker Space guidelines
 # Reference: https://huggingface.co/docs/hub/spaces-sdks-docker
 
-FROM python:3.9
+FROM python:3.10
 
 # Create non-root user for security (required by Hugging Face)
 RUN useradd -m -u 1000 user
